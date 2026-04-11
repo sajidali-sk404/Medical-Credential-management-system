@@ -1,0 +1,208 @@
+// controllers/requests.js
+import CredentialingRequest from '../models/CredentialingRequest.js'
+import Document             from '../models/Document.js'
+import StatusLog            from '../models/StatusLog.js'
+import SupportTicket        from '../models/SupportTicket.js'
+import { uploadToCloudinary, deleteFromCloudinary } from '../lib/cloudinary.js'
+
+// ── Allowed status transitions (state machine) ────────────────────
+const ALLOWED_TRANSITIONS = {
+  pending:   ['in_review'],
+  in_review: ['approved', 'rejected'],
+  approved:  [],
+  rejected:  [],
+}
+export const isValidTransition = (from, to) =>
+  ALLOWED_TRANSITIONS[from]?.includes(to) ?? false
+
+
+// ── POST /api/requests ────────────────────────────────────────────
+// Submit a new credentialing request
+export const submitRequest = async (req, res) => {
+  try {
+    const { provider_name, specialty, notes } = req.body
+
+    if (!provider_name || !specialty) {
+      return res.status(400).json({ message: 'provider_name and specialty are required' })
+    }
+
+    const request = await CredentialingRequest.create({
+      client_id:    req.clientProfile._id,
+      provider_name,
+      specialty,
+      notes:        notes ?? null,
+      status:       'pending',           // always server-set, never from body
+    })
+
+    // Write the first audit log entry immediately on creation
+    await StatusLog.create({
+      request_id: request._id,
+      changed_by: req.user._id,
+      old_status: null,                  // null = this is the creation entry
+      new_status: 'pending',
+      note:       'Request submitted by client',
+    })
+
+    res.status(201).json(request)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+
+// ── GET /api/requests/my ──────────────────────────────────────────
+// All requests belonging to the logged-in client, with optional status filter
+export const getMyRequests = async (req, res) => {
+  try {
+    const { status, page = 1, limit = 10 } = req.query
+
+    const filter = { client_id: req.clientProfile._id }
+    if (status) filter.status = status
+
+    const skip = (parseInt(page) - 1) * parseInt(limit)
+
+    const [requests, total] = await Promise.all([
+      CredentialingRequest.find(filter)
+        .sort({ submitted_at: -1 })
+        .skip(skip)
+        .limit(parseInt(limit)),
+      CredentialingRequest.countDocuments(filter),
+    ])
+
+    res.json({ requests, total, page: parseInt(page) })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+
+// ── GET /api/requests/my/stats ────────────────────────────────────
+// Counts for the client dashboard stat cards
+export const getMyStats = async (req, res) => {
+  try {
+    const stats = await CredentialingRequest.aggregate([
+      { $match: { client_id: req.clientProfile._id } },
+      { $group: { _id: '$status', count: { $sum: 1 } } },
+    ])
+
+    const result = { total: 0, pending: 0, in_review: 0, approved: 0, rejected: 0 }
+    stats.forEach(s => {
+      result[s._id] = s.count
+      result.total += s.count
+    })
+
+    res.json(result)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+
+// ── GET /api/requests/:id ─────────────────────────────────────────
+// Single request + its documents + full status timeline
+// ownsRequest middleware already verified ownership and attached req.credRequest
+export const getRequestById = async (req, res) => {
+  try {
+    const [documents, statusLogs] = await Promise.all([
+      Document.find({ request_id: req.credRequest._id })
+        .sort({ uploaded_at: 1 }),
+      StatusLog.find({ request_id: req.credRequest._id })
+        .sort({ changed_at: 1 }),
+    ])
+
+    res.json({
+      ...req.credRequest.toObject(),
+      documents,
+      status_logs: statusLogs,
+    })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+
+// ── POST /api/requests/:id/documents ─────────────────────────────
+// Upload a file — Multer puts it in req.file as a buffer
+export const uploadDocument = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file provided' })
+    }
+
+    // Upload buffer → Cloudinary, organised by request ID
+    const result = await uploadToCloudinary(
+      req.file.buffer,
+      req.file.mimetype,
+      req.credRequest._id.toString()
+    )
+
+    const doc = await Document.create({
+      request_id: req.credRequest._id,
+      file_name:  req.file.originalname,
+      file_url:   result.secure_url,    // permanent CDN URL — all you store
+      file_type:  req.file.mimetype,
+      public_id:  result.public_id,     // needed to delete from Cloudinary later
+    })
+
+    res.status(201).json(doc)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Upload failed' })
+  }
+}
+
+
+// ── DELETE /api/requests/:id/documents/:docId ─────────────────────
+// Delete a document from both Cloudinary and MongoDB
+export const deleteDocument = async (req, res) => {
+  try {
+    const doc = await Document.findById(req.params.docId)
+    if (!doc) {
+      return res.status(404).json({ message: 'Document not found' })
+    }
+
+    // Confirm the doc belongs to this request (extra safety check)
+    if (doc.request_id.toString() !== req.credRequest._id.toString()) {
+      return res.status(403).json({ message: 'Access denied' })
+    }
+
+    const resourceType = doc.file_type === 'application/pdf' ? 'raw' : 'image'
+
+    // Delete from both — if Cloudinary fails, don't delete the DB record
+    await deleteFromCloudinary(doc.public_id, resourceType)
+    await Document.findByIdAndDelete(doc._id)
+
+    res.json({ message: 'Document deleted' })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+
+// ── POST /api/support ─────────────────────────────────────────────
+// Client submits a support ticket
+export const submitTicket = async (req, res) => {
+  try {
+    const { subject, message } = req.body
+
+    if (!subject || !message) {
+      return res.status(400).json({ message: 'subject and message are required' })
+    }
+
+    const ticket = await SupportTicket.create({
+      client_id: req.clientProfile._id,
+      subject,
+      message,
+    })
+
+    res.status(201).json(ticket)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
