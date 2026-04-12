@@ -1,5 +1,5 @@
-export const SignUp = () => {
-    return (
-        <h1>Sign Up page</h1>
-    )
+import { SignUpViews } from "@/modules/auth/ui/views/sign-up-views";
+
+export default function SignUp() {
+  return <SignUpViews />
 }
