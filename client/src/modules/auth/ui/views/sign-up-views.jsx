@@ -17,6 +17,8 @@ export const SignUpViews = () => {
     const [phone, setPhone] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
 
     const router = useRouter()
 
@@ -27,7 +29,7 @@ export const SignUpViews = () => {
         setLoading(true);
         try {
             if (password !== confirmPassword) {
-                alert("Passwords do not match");
+                setError("Passwords do not match");
                 setLoading(false);
                 return;
             }
@@ -37,22 +39,24 @@ export const SignUpViews = () => {
                 { name, email, password, company_name, phone },
                 { withCredentials: true }   // sends the httpOnly cookie
             );
-            if (role === "admin") {
-                router.push("/admin/dashboard");
-            } else {
-                router.push("/dashboard");
-            }
+            setMessage(data.message || "Registration successful! Please log in.");
+            router.push("/login");
 
         } catch (err) {
-            console.log("Login failed:", err.response?.data);
-            alert(err.response?.data?.message || "Sign up failed");
+            setError(err.response?.data?.message || "Sign up failed");
         } finally {
+            setName("");
+            setEmail("");
+            setPassword("");
+            setConfirmPassword("");
+            setCompanyName("");
+            setPhone("");
             setLoading(false);
         }
     };
 
     return (
-        <div className="flex h-full w-screen bg-white ">
+        <div className="flex h-full w-full bg-white ">
 
             {/* ── LEFT SIDE ─────────────────────────────────────────── */}
             <div className="hidden md:flex relative w-1/2 flex-col"
@@ -118,11 +122,8 @@ export const SignUpViews = () => {
                 {/* Bottom: Trusted badge */}
                 <div className="relative z-10 p-8 flex items-center gap-3">
                     <div className="flex -space-x-2">
-                        <div>
                             <img src="./docter.svg" alt="" />
-                        </div>
                     </div>
-                    <span className="text-white/60 text-sm">Trusted by 2,400+ Institutions</span>
                 </div>
             </div>
 
@@ -158,7 +159,17 @@ export const SignUpViews = () => {
                             Sign Up
                         </Link>
                     </div>
-
+                    {/* Error and Message */}
+                    {error && (
+                        <div className="mb-4 p-3 text-sm text-red-700 bg-red-100 rounded">
+                            {error}
+                        </div>
+                    )}
+                    {message && (
+                        <div className="mb-4 p-3 text-sm text-green-700 bg-green-100 rounded">
+                            {message}
+                        </div>
+                    )}
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {/* full Name */}
@@ -330,7 +341,7 @@ export const SignUpViews = () => {
                 </div>
 
                 {/* System Verified badge — bottom right */}
-                <div className="absolute bottom-0 right-6 flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm">
+                <div className="absolute bottom-0 -mb-10 right-6 flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm">
                     <div className="w-6 h-6 rounded bg-teal-500 flex items-center justify-center flex-shrink-0">
                         <Shield className="w-3.5 h-3.5 text-white" />
                     </div>
