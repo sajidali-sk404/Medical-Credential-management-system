@@ -14,7 +14,7 @@ import {
   requireClient,
   ownsRequest,
 } from '../middleware/auth.js'
-import { upload } from '../middleware/upload.js'
+import { uploadDocument } from "../middleware/upload.js";
 
 const router = express.Router()
 
@@ -51,7 +51,7 @@ router.post('/:id/documents',
   verifyToken,
   requireClient,
   ownsRequest,
-  upload.single('document'),   // field name must match frontend FormData
+  uploadDocument.single("file"),   // field name must match frontend FormData
   uploadDocument
 )
 

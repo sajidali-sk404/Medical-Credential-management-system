@@ -7,11 +7,12 @@ import {
   getMe,
 } from '../controllers/auth.js'
 import { verifyToken } from '../middleware/auth.js'
+import { uploadImage } from '../middleware/upload.js'
 
 const router = express.Router()
 
 // ── Public routes — no token needed ──────────────────────────────
-router.post('/register', register)
+router.post('/register', uploadImage.single("image"), register)
 router.post('/login',    login)
 router.post('/logout',   logout)
 

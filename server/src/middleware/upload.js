@@ -1,34 +1,36 @@
-// middleware/upload.js
-import multer from 'multer'
+import multer from "multer";
 
-// ── memoryStorage — file lives in RAM as a Buffer ─────────────────
-// Never written to disk. Buffer is piped directly to Cloudinary,
-// then garbage collected. Server stays completely stateless.
-const storage = multer.memoryStorage()
+// memory storage (for Cloudinary or buffer handling)
+const storage = multer.memoryStorage();
 
-// ── File type whitelist ───────────────────────────────────────────
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = [
-    'application/pdf',
-    'image/jpeg',
-    'image/jpg',
-    'image/png',
-    'image/webp',
-  ]
-
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true)    // accept
-  } else {
-    cb(new Error('Only PDF and image files are allowed'), false)  // reject
-  }
-}
-
-// ── Multer instance ───────────────────────────────────────────────
-export const upload = multer({
+// ── Image Upload ─────────────────────────────
+export const uploadImage = multer({
   storage,
-  fileFilter,
-  limits: {
-    fileSize: 10 * 1024 * 1024,   // 10MB max per file
-    files:    1,                   // only one file per request
+  fileFilter: (req, file, cb) => {
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image files are allowed"), false);
+    }
   },
-})
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+});
+
+// ── Document Upload ──────────────────────────
+export const uploadDocument = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowed = ["application/pdf"];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed"), false);
+    }
+  },
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+  },
+});

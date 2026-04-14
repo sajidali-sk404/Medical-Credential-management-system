@@ -39,6 +39,7 @@ export const login = async (req, res) => {
     res.json({
       message: 'Login successful',
       user: {
+        image: user.image,
         id:    user._id,
         name:  user.name,
         email: user.email,
@@ -53,39 +54,69 @@ export const login = async (req, res) => {
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password, company_name, phone } = req.body
+    const { name, email, password, company_name, phone } = req.body;
 
+    // ✅ validation
     if (!name || !email || !password || !company_name) {
-      return res.status(400).json({ message: 'name, email, password, company_name are required' })
+      return res.status(400).json({
+        message: "name, email, password, company_name are required",
+      });
     }
 
-    const exists = await User.findOne({ email: email.toLowerCase() })
+    // ✅ check existing user
+    const exists = await User.findOne({ email: email.toLowerCase() });
     if (exists) {
-      return res.status(409).json({ message: 'Email already registered' })
+      return res.status(409).json({ message: "Email already registered" });
     }
 
-    const hash = await bcrypt.hash(password, 12)
+    // ✅ hash password
+    const hash = await bcrypt.hash(password, 12);
 
+    // ✅ handle image upload (optional)
+    let imageUrl = null;
+    let publicId = null;
+
+    if (req.file) {
+      const result = await uploadToCloudinary(
+        req.file.buffer,
+        req.file.mimetype,
+        "users" // folder name
+      );
+
+      imageUrl = result.secure_url;
+      publicId = result.public_id;
+    }
+
+    // ✅ create user
     const user = await User.create({
       name,
       email: email.toLowerCase(),
       password_hash: hash,
-      role: 'client'          // admins are seeded only — never registered
-    })
+      role: "client",
+      image: imageUrl,        // 👈 store URL
+      image_public_id: publicId, // 👈 (optional but recommended)
+    });
 
+    // ✅ create client profile
     await Client.create({
-      user_id:      user._id,
+      user_id: user._id,
       company_name,
-      phone:        phone ?? null,
-    })
+      phone: phone ?? null,
+    });
 
-    res.status(201).json({ message: 'Account created' })
+    res.status(201).json({
+      message: "Account created",
+      user,
+    });
 
   } catch (err) {
-    console.error(err)
-    res.status(500).json({ message: 'Server error' })
+    console.error(err);
+    res.status(500).json({
+      message: "Server error",
+      error: err.message,
+    });
   }
-}
+};
 
 export const logout = (req, res) => {
   res.clearCookie('token')

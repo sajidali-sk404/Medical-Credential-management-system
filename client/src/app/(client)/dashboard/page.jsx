@@ -1,4 +1,4 @@
-import { DashboardView } from "@/modules/dashboard/ui/views/dashboard-views";
+import { DashboardSidebar } from "@/modules/dashboard/ui/components/dashboard-sidebar";
 export default function Dashboard() {
-    return <DashboardView />
+    return <DashboardSidebar />     
 }

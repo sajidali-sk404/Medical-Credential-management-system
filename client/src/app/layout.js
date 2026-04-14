@@ -1,4 +1,4 @@
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider } from '../../context/AuthContext';
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 

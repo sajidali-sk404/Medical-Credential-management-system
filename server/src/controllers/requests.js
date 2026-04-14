@@ -1,16 +1,16 @@
 // controllers/requests.js
 import CredentialingRequest from '../models/CredentialingRequest.js'
-import Document             from '../models/Document.js'
-import StatusLog            from '../models/StatusLog.js'
-import SupportTicket        from '../models/SupportTicket.js'
+import Document from '../models/Document.js'
+import StatusLog from '../models/StatusLog.js'
+import SupportTicket from '../models/SupportTicket.js'
 import { uploadToCloudinary, deleteFromCloudinary } from '../lib/cloudinary.js'
 
 // ── Allowed status transitions (state machine) ────────────────────
 const ALLOWED_TRANSITIONS = {
-  pending:   ['in_review'],
+  pending: ['in_review'],
   in_review: ['approved', 'rejected'],
-  approved:  [],
-  rejected:  [],
+  approved: [],
+  rejected: [],
 }
 export const isValidTransition = (from, to) =>
   ALLOWED_TRANSITIONS[from]?.includes(to) ?? false
@@ -27,11 +27,11 @@ export const submitRequest = async (req, res) => {
     }
 
     const request = await CredentialingRequest.create({
-      client_id:    req.clientProfile._id,
+      client_id: req.clientProfile._id,
       provider_name,
       specialty,
-      notes:        notes ?? null,
-      status:       'pending',           // always server-set, never from body
+      notes: notes ?? null,
+      status: 'pending',           // always server-set, never from body
     })
 
     // Write the first audit log entry immediately on creation
@@ -40,7 +40,7 @@ export const submitRequest = async (req, res) => {
       changed_by: req.user._id,
       old_status: null,                  // null = this is the creation entry
       new_status: 'pending',
-      note:       'Request submitted by client',
+      note: 'Request submitted by client',
     })
 
     res.status(201).json(request)
@@ -133,6 +133,15 @@ export const uploadDocument = async (req, res) => {
       return res.status(400).json({ message: 'No file provided' })
     }
 
+    if (!req.credRequest) {
+      return res.status(400).json({ message: "Invalid request context" });
+    }
+
+    const allowed = ["application/pdf"];
+    if (!allowed.includes(req.file.mimetype)) {
+      return res.status(400).json({ message: "Invalid file type" });
+    }
+
     // Upload buffer → Cloudinary, organised by request ID
     const result = await uploadToCloudinary(
       req.file.buffer,
@@ -140,18 +149,21 @@ export const uploadDocument = async (req, res) => {
       req.credRequest._id.toString()
     )
 
-    const doc = await Document.create({
+    const document = await Document.create({
       request_id: req.credRequest._id,
-      file_name:  req.file.originalname,
-      file_url:   result.secure_url,    // permanent CDN URL — all you store
-      file_type:  req.file.mimetype,
-      public_id:  result.public_id,     // needed to delete from Cloudinary later
+      file_name: req.file.originalname,
+      file_url: result.secure_url,    // permanent CDN URL — all you store
+      file_type: req.file.mimetype,
+      public_id: result.public_id,     // needed to delete from Cloudinary later
     })
 
-    res.status(201).json(doc)
+    res.status(201).json(document)
   } catch (err) {
     console.error(err)
-    res.status(500).json({ message: 'Upload failed' })
+    res.status(500).json({
+      message: "Upload failed",
+      error: err.message,
+    })
   }
 }
 
@@ -179,7 +191,10 @@ export const deleteDocument = async (req, res) => {
     res.json({ message: 'Document deleted' })
   } catch (err) {
     console.error(err)
-    res.status(500).json({ message: 'Server error' })
+    res.status(500).json({
+      message: "Delete failed",
+      error: err.message,
+    })
   }
 }
 

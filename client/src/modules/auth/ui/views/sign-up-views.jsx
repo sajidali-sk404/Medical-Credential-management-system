@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, Shield } from "lucide-react";
 import api from "@/lib/axios";
 import { useRouter } from 'next/navigation'
+import { Input } from "@/components/ui/input";
 
 export const SignUpViews = () => {
 
@@ -178,7 +179,8 @@ export const SignUpViews = () => {
                                 Full Name
                             </label>
                             <div className="relative">
-                                <input
+                                
+                                <Input
                                     type="text"
                                     placeholder="Sajid Ali"
                                     required
@@ -195,7 +197,7 @@ export const SignUpViews = () => {
                             </label>
                             <div className="relative">
                                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                                <input
+                                <Input
                                     type="email"
                                     placeholder="name@organization.org"
                                     required
@@ -215,7 +217,7 @@ export const SignUpViews = () => {
                             </div>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                                <input
+                                <Input
                                     type={showPassword ? "text" : "password"}
                                     placeholder="············"
                                     required
@@ -241,7 +243,7 @@ export const SignUpViews = () => {
                             </div>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                                <input
+                                <Input
                                     type={showPassword ? "text" : "password"}
                                     placeholder="············"
                                     required
@@ -264,7 +266,7 @@ export const SignUpViews = () => {
                                 Company Name
                             </label>
                             <div className="relative">
-                                <input
+                                <Input
                                     type="text"
                                     placeholder="Northwell Health Partners"
                                     required
@@ -281,7 +283,7 @@ export const SignUpViews = () => {
                                 Phone
                             </label>
                             <div className="relative">
-                                <input
+                                <Input
                                     type="text"
                                     placeholder="921234567890"
                                     required
