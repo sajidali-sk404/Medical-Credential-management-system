@@ -1,3 +1,4 @@
+import { AuthProvider } from '@/context/AuthContext';
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -23,7 +24,11 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       webcrx=""
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+         <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

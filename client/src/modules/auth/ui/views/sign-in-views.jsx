@@ -23,7 +23,7 @@ export const SignInViews = () => {
         setLoading(true);
         try {
             const { data } = await api.post(
-                "http://localhost:5000/api/auth/login",
+                "/api/auth/login",
                 { email, password },
                 { withCredentials: true }   // sends the httpOnly cookie
             );
