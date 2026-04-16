@@ -146,7 +146,7 @@ export const uploadDocument = async (req, res) => {
     const result = await uploadToCloudinary(
       req.file.buffer,
       req.file.mimetype,
-      req.credRequest._id.toString()
+      `credentialing/${req.credRequest._id}`
     )
 
     const document = await Document.create({

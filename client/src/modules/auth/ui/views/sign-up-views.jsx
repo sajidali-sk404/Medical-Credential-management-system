@@ -14,9 +14,13 @@ export const SignUpViews = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [email, setEmail] = useState("");
     const [name, setName] = useState("");
-    const [company_name, setCompanyName] = useState("");
+    const [companyName, setCompanyName] = useState("");
     const [phone, setPhone] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [image, setImage] = useState(null);
+    const [preview, setPreview] = useState(null);
+
+
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -28,6 +32,7 @@ export const SignUpViews = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+
         try {
             if (password !== confirmPassword) {
                 setError("Passwords do not match");
@@ -35,13 +40,32 @@ export const SignUpViews = () => {
                 return;
             }
 
+            // ✅ create FormData
+            const formData = new FormData();
+            formData.append("name", name);
+            formData.append("email", email);
+            formData.append("password", password);
+            formData.append("company_name", companyName);
+            formData.append("phone", phone);
+
+            // ✅ append image (if selected)
+            if (image) {
+                formData.append("image", image);
+            }
+
             const { data } = await api.post(
                 "http://localhost:5000/api/auth/register",
-                { name, email, password, company_name, phone },
-                { withCredentials: true }   // sends the httpOnly cookie
+                formData,
+                {
+                    withCredentials: true,
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
             );
+
             setMessage(data.message || "Registration successful! Please log in.");
-            router.push("/login");
+            router.push("/sign-in");
 
         } catch (err) {
             setError(err.response?.data?.message || "Sign up failed");
@@ -123,7 +147,7 @@ export const SignUpViews = () => {
                 {/* Bottom: Trusted badge */}
                 <div className="relative z-10 p-8 flex items-center gap-3">
                     <div className="flex -space-x-2">
-                            <img src="./docter.svg" alt="" />
+                        <img src="./docter.svg" alt="" />
                     </div>
                 </div>
             </div>
@@ -173,13 +197,14 @@ export const SignUpViews = () => {
                     )}
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-5">
+
                         {/* full Name */}
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                                 Full Name
                             </label>
                             <div className="relative">
-                                
+
                                 <Input
                                     type="text"
                                     placeholder="Sajid Ali"
@@ -270,7 +295,7 @@ export const SignUpViews = () => {
                                     type="text"
                                     placeholder="Northwell Health Partners"
                                     required
-                                    value={company_name}
+                                    value={companyName}
                                     onChange={(e) => setCompanyName(e.target.value)}
                                     className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-gray-50 transition"
                                 />
@@ -294,6 +319,21 @@ export const SignUpViews = () => {
                             </div>
                         </div>
 
+                        {/* Profile picture */}
+                        <div>
+                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                                Profile Picture (optional)
+                            </label>
+                            <div className="relative">
+
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => setImage(e.target.files[0])}
+                                    className="w-full p-10 border border-gray-200 rounded-full text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-gray-50 transition"
+                                />
+                            </div>
+                        </div>
                         {/* Submit */}
                         <button
                             type="submit"

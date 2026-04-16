@@ -21,7 +21,7 @@ export const AvatarGenerated = ({ seed, className, variant }) => {
     return (
         <Avatar className={cn(className)}>
             <AvatarImage src={avatar.toDataUri()} alt="avatar" />
-            <AvatarFallback>{seed.charAt(0).toUpperCase()}</AvatarFallback>
+            <AvatarFallback>{seed?.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
     )
 }

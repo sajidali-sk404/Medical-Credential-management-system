@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, Shield, CheckSquare, Square } from "lucide-react";
 import api from "@/lib/axios";
 import { Input } from "@/components/ui/input";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 export const SignInViews = () => {
 
@@ -34,8 +34,8 @@ export const SignInViews = () => {
                 { email, password },
                 { withCredentials: true }   // sends the httpOnly cookie
             );
-            setMessage(data.message || "Login successful!");
             login(data.user);  // Update the auth context with the logged-in user
+            setMessage(data.message || "Login successful!");
             // redirect based on role
             if (data.user.role === "admin") {
                 router.push("/admin/dashboard");

@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import jwt    from 'jsonwebtoken'
 import User   from '../models/User.js'
 import Client from '../models/Client.js'
+import { uploadToCloudinary } from '../lib/cloudinary.js'
 
 export const login = async (req, res) => {
   try {
@@ -129,5 +130,6 @@ export const getMe = async (req, res) => {
     name:  req.user.name,
     email: req.user.email,
     role:  req.user.role,
+    image: req.user.image,
   })
 }

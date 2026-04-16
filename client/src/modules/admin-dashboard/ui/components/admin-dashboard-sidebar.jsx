@@ -1,44 +1,50 @@
 "use client";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { LayoutDashboard, FileText, ShieldQuestionMark } from 'lucide-react';
+import { LayoutDashboard, FileText, ShieldQuestionMark, Users  } from 'lucide-react';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { DashboardUserButton } from "./dashboard-user-button";
+import { DashboardUserButton } from "../../../dashboard/ui/components/dashboard-user-button";
+import { Separator } from "@/components/ui/separator";
 
-const clientRoutes = [
+const adminRoutes = [
     {
         icon: LayoutDashboard,
         label: "Dashboard",
-        href: "/dashboard",
+        href: "/admin/dashboard",
+    },
+    {
+        icon: Users,
+        label: "Clients",
+        href: "/admin/clients",
     },
     {
         icon: FileText,
-        label: "My Requests",
-        href: "/dashboard/requests",
+        label: "All Requests",
+        href: "/admin/requests",
     },
     {
         icon: ShieldQuestionMark,
         label: "Contact Support",
-        href: "/dashboard/contact-support",
+        href: "/admin/support",
     }
 ]
-
-export const DashboardSidebar = () => {
+export const AdminDashboardSidebar = () => {
     const pathname = usePathname();
     return (
         <Sidebar>
             <SidebarHeader>
-                <h2>Dashboard</h2>
+                <h2>Admin Portal</h2>
             </SidebarHeader>
+            <Separator className="bg-gray-400"/>
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {clientRoutes.map((item) =>
+                            {adminRoutes.map((item) =>
                                 <SidebarMenuItem key={item.href}>
-                                    <SidebarMenuButton asChild className={cn("h-10 hover:bg-linear-to-r/oklch border border-transparent hover:border-[#5D6B68]/10 from-sidebar-accent from-5% via-30% via-sidebar/50 to-sidebar/50",
-                                        pathname === item.href && "bg-linear-to-r/oklch border-[#5D6B68]/10 from-sidebar-accent from-5% via-30% via-sidebar/50 to-sidebar/50"
+                                    <SidebarMenuButton asChild className={cn("h-10 hover:bg-linear-to-r/oklch border border-transparent hover:border-[#5D6B68]/40 from-sidebar-accent from-5% via-30% via-sidebar/50 to-sidebar/50",
+                                        pathname === item.href && "bg-linear-to-r/increasing border-[#5D6B68]/60 from-sidebar-accent from-5% via-30% via-sidebar/50 to-sidebar/50"
                                     )}>
                                         <Link href={item.href}>
                                             <item.icon className="size-5" />
@@ -51,6 +57,7 @@ export const DashboardSidebar = () => {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
+            <Separator className="bg-gray-400"/>
             <SidebarFooter>
                 <DashboardUserButton />
             </SidebarFooter>

@@ -20,7 +20,7 @@ export const uploadImage = multer({
 });
 
 // ── Document Upload ──────────────────────────
-export const uploadDocument = multer({
+export const uploadFile = multer({
   storage,
   fileFilter: (req, file, cb) => {
     const allowed = ["application/pdf"];
