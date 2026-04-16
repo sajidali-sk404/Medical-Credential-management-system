@@ -52,7 +52,7 @@ router.post('/:id/documents',
   verifyToken,
   requireClient,
   ownsRequest,
-  uploadFile.single("file"),   // field name must match frontend FormData
+  uploadFile.single("document"),   // field name must match frontend FormData
   uploadDocument
 )
 

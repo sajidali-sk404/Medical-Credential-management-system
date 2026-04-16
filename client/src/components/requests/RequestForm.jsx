@@ -1,9 +1,9 @@
 "use client"
 import { useState }  from "react"
 import { useRouter } from "next/navigation"
-import { Input }     from "@/components/ui/Input"
-import { Button }    from "@/components/ui/Button"
-import api           from "@/lib/api"
+import { Input }     from "@/components/ui/input"
+import { Button }    from "@/components/ui/button"
+import api           from "@/lib/axios"
 
 const SPECIALTIES = [
   "Cardiology", "Radiology", "Pediatrics", "Surgery",
@@ -29,7 +29,7 @@ export function RequestForm() {
     setError("")
     try {
       await api.post("/api/requests", form)
-      router.push("/requests")
+      router.push("/dashboard/requests")
     } catch (err) {
       setError(err.response?.data?.message || "Submission failed")
     } finally {

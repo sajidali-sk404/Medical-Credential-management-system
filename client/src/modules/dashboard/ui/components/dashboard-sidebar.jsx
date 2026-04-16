@@ -24,36 +24,42 @@ const clientRoutes = [
     }
 ]
 
-export const DashboardSidebar = () => {
+export const DashboardSidebar = ({ children }) => {
     const pathname = usePathname();
     return (
-        <Sidebar>
-            <SidebarHeader>
-                <h2>Dashboard</h2>
-            </SidebarHeader>
-            <SidebarContent>
-                <SidebarGroup>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            {clientRoutes.map((item) =>
-                                <SidebarMenuItem key={item.href}>
-                                    <SidebarMenuButton asChild className={cn("h-10 hover:bg-linear-to-r/oklch border border-transparent hover:border-[#5D6B68]/10 from-sidebar-accent from-5% via-30% via-sidebar/50 to-sidebar/50",
-                                        pathname === item.href && "bg-linear-to-r/oklch border-[#5D6B68]/10 from-sidebar-accent from-5% via-30% via-sidebar/50 to-sidebar/50"
-                                    )}>
-                                        <Link href={item.href}>
-                                            <item.icon className="size-5" />
-                                            <span className="text-sm font-medium tracking-tight">{item.label}</span>
-                                        </Link>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            )}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-            </SidebarContent>
-            <SidebarFooter>
-                <DashboardUserButton />
-            </SidebarFooter>
-        </Sidebar>
+        <div className="flex h-screen w-full">
+            <Sidebar>
+                <SidebarHeader>
+                    <h2>Dashboard</h2>
+                </SidebarHeader>
+                <SidebarContent>
+                    <SidebarGroup>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                {clientRoutes.map((item) =>
+                                    <SidebarMenuItem key={item.href}>
+                                        <SidebarMenuButton asChild className={cn("h-10 hover:bg-linear-to-r/oklch border border-transparent hover:border-[#5D6B68]/10 from-sidebar-accent from-5% via-30% via-sidebar/50 to-sidebar/50",
+                                            pathname === item.href && "bg-linear-to-r/oklch border-[#5D6B68]/10 from-sidebar-accent from-5% via-30% via-sidebar/50 to-sidebar/50"
+                                        )}>
+                                            <Link href={item.href}>
+                                                <item.icon className="size-5" />
+                                                <span className="text-sm font-medium tracking-tight">{item.label}</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                )}
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+                </SidebarContent>
+                <SidebarFooter>
+                    <DashboardUserButton />
+                </SidebarFooter>
+            </Sidebar>
+            {/* ✅ MAIN CONTENT (THIS WAS MISSING) */}
+            <main className="flex-1 p-4 overflow-auto">
+                {children}
+            </main>
+        </div>
     );
 }

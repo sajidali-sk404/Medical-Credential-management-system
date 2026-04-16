@@ -54,7 +54,7 @@ export function RequestsTable({ requests = [], basePath = "/requests" }) {
               </td>
               <td style={{ padding: "12px", textAlign: "right" }}>
                 <Link
-                  href={`${basePath}/${req._id}`}
+                  href={`/dashboard${basePath}/${req._id}`}
                   style={{
                     fontSize: "12px", color: "var(--color-text-info)",
                     border: "0.5px solid var(--color-border-info)",

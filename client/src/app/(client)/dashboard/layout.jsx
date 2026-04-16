@@ -1,30 +1,31 @@
 "use client";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
+import { SidebarProvider } from "@/components/ui/sidebar"
 import { DashboardSidebar } from "@/modules/dashboard/ui/components/dashboard-sidebar"
-import { useAuth }  from "../../../../context/AuthContext"
+import { useAuth } from "../../../../context/AuthContext"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
+import { Navbar } from "@/components/layout/Navbar";
 
-export default function Layout({ children }) {
+
+export default function ClientLayout({ children }) {
   const { user, loading, isClient } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
     if (loading) return
-    if (!user)     { router.replace("/sign-in");         return }
+    if (!user) { router.replace("/sign-in"); return }
     if (!isClient) { router.replace("/admin/dashboard"); return }
   }, [user, loading, isClient])
 
   // Show nothing while checking — prevents flash of protected content
-  if (loading || !isClient) return null
+  if (!isClient) { router.replace("/admin/dashboard"); return }
+  if (loading) return <p>Loading...</p>
 
   return (
     <SidebarProvider>
       <DashboardSidebar>
-        <AppSidebar />
+      <Navbar />
         <main>
-          <SidebarTrigger />
           {children}
         </main>
       </DashboardSidebar>

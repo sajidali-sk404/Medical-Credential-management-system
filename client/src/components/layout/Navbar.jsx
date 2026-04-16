@@ -1,7 +1,7 @@
 // components/layout/Navbar.jsx
 "use client"
 import Link          from "next/link"
-import { useAuth }   from "@/context/AuthContext"
+import { useAuth }   from "../../../context/AuthContext"
 
 const CLIENT_LINKS = [
   { href: "/dashboard",    label: "Dashboard"    },

@@ -1,4 +1,4 @@
-import { AdminDashboardSidebar } from "@/modules/admin-dashboard/ui/components/admin-dashboard-sidebar";
+import AdminDashboardPage from "@/modules/admin-dashboard/ui/views/admin-dashboard-view-page";
 export default function AdminDashboard() {
-    return <AdminDashboardSidebar />
+    return <AdminDashboardPage  />
 }

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 import { PageHeader }          from "@/components/layout/PageHeader"
 import { StatCard }            from "@/components/dashboard/StatCard"
 import { RequestsTable }       from "@/components/dashboard/RequestsTable"
-import api                     from "@/lib/api"
+import api                     from "@/lib/axios"
 
 export default function AdminDashboardPage() {
   const [stats, setStats]       = useState(null)
