@@ -7,6 +7,7 @@ import { RequestsTable }       from "@/components/dashboard/RequestsTable"
 import { Button }              from "@/components/ui/button"
 import api                     from "@/lib/axios"
 import Link                    from "next/link"
+import { FileBadge } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user }                    = useAuth()
@@ -16,8 +17,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     Promise.all([
-      api.get("http://localhost:5000/api/requests/my/stats"),
-      api.get("http://localhost:5000/api/requests/my?limit=5"),
+      api.get("/api/requests/my/stats"),
+      api.get("/api/requests/my?limit=5"),
     ]).then(([s, r]) => {
       setStats(s.data)
       setRequests(r.data.requests)
@@ -39,10 +40,10 @@ export default function DashboardPage() {
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "28px" }}>
-        <StatCard label="Total submitted" value={stats?.total}     color="default" />
-        <StatCard label="Pending"         value={stats?.pending}   color="warning" />
-        <StatCard label="Approved"        value={stats?.approved}  color="success" />
-        <StatCard label="Rejected"        value={stats?.rejected}  color="danger"  />
+        <StatCard icon="./filebage.svg" label="Total submitted" value={stats?.total}     color="default" />
+        <StatCard icon="./greentik.svg" label="Approved"        value={stats?.approved}  color="success" />
+        <StatCard icon="./pendingfile.svg" label="Pending"         value={stats?.pending}   color="warning" />
+        <StatCard icon="./rejectedFile.svg" label="Rejected"        value={stats?.rejected}  color="danger"  />
       </div>
 
       <div style={{

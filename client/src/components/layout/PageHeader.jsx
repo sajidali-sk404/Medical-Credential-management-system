@@ -7,7 +7,7 @@ export function PageHeader({ title, subtitle, action }) {
       marginBottom:  "24px",
     }}>
       <div>
-        <h1 style={{ margin: 0, fontSize: "20px", fontWeight: 500 }}>{title}</h1>
+        <h1 style={{ margin: "1px 0 0",  fontSize: "20px", fontWeight: 500 }}>{title}</h1>
         {subtitle && (
           <p style={{ margin: "2px 0 0", fontSize: "13px", color: "var(--color-text-secondary)" }}>
             {subtitle}

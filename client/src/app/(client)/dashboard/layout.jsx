@@ -17,15 +17,17 @@ export default function ClientLayout({ children }) {
     if (!isClient) { router.replace("/admin/dashboard"); return }
   }, [user, loading, isClient])
 
-  // Show nothing while checking — prevents flash of protected content
-  if (!isClient) { router.replace("/admin/dashboard"); return }
-  if (loading) return <p>Loading...</p>
+  // ✅ Only block UI while loading
+  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
+
+  // ✅ Prevent rendering before redirect happens
+  if (!user || !isClient) return null;
 
   return (
     <SidebarProvider>
       <DashboardSidebar>
       <Navbar />
-        <main>
+        <main className="bg-accent">
           {children}
         </main>
       </DashboardSidebar>

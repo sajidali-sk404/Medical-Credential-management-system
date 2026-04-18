@@ -3,8 +3,8 @@ import { useState, useEffect } from "react"
 import { use }                 from "react"
 import { PageHeader }          from "@/components/layout/PageHeader"
 import { Badge }               from "@/components/ui/Badge"
-import { Button }              from "@/components/ui/Button"
-import { StatusTimeline }      from "@/components/StatusTimeline"
+import { Button }              from "@/components/ui/button"
+import { StatusTimeline }      from "@/components/StatusTimeLine"
 import api                     from "@/lib/axios"
 
 const NEXT_STATUS = {

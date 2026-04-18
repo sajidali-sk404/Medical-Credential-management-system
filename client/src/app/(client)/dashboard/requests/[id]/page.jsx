@@ -83,7 +83,7 @@ export default function RequestDetailPage({ params }) {
                                     </p>
                                 </div>
                                 <a
-                                    href={doc.file_url}
+                                    href={doc.file_url.replace("/upload/", "/upload/fl_inline/")}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     style={{

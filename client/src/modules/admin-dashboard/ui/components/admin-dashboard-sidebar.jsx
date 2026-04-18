@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { DashboardUserButton } from "../../../dashboard/ui/components/dashboard-user-button";
 import { Separator } from "@/components/ui/separator";
+import { Children } from "react";
 
 const adminRoutes = [
     {
@@ -29,9 +30,10 @@ const adminRoutes = [
         href: "/admin/support",
     }
 ]
-export const AdminDashboardSidebar = () => {
+export const AdminDashboardSidebar = ({ children }) => {
     const pathname = usePathname();
     return (
+        <div className="flex h-screen w-full">
         <Sidebar>
             <SidebarHeader>
                 <h2>Admin Portal</h2>
@@ -62,5 +64,9 @@ export const AdminDashboardSidebar = () => {
                 <DashboardUserButton />
             </SidebarFooter>
         </Sidebar>
+        <main className="p-6">
+            {children}
+        </main>
+        </div>
     );
 }

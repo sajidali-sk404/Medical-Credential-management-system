@@ -27,10 +27,10 @@ export default function AdminDashboardPage() {
       <PageHeader title="Admin dashboard" subtitle="Platform-wide overview" />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "28px" }}>
-        <StatCard label="Total requests"  value={stats?.total}        color="default" />
-        <StatCard label="Pending"         value={stats?.pending}      color="warning" />
-        <StatCard label="Approved"        value={stats?.approved}     color="success" />
-        <StatCard label="Open tickets"    value={stats?.open_tickets} color="danger"  />
+        <StatCard icon="./filebage.svg" label="Total requests"  value={stats?.total}        color="default" />
+        <StatCard icon="./pendingfile.svg" label="Pending"         value={stats?.pending}      color="warning" />
+        <StatCard icon="./approvedfile.svg" label="Approved"        value={stats?.approved}     color="success" />
+        <StatCard icon="./openticketsfile.svg" label="Open tickets"    value={stats?.open_tickets} color="danger"  />
       </div>
 
       <div style={{

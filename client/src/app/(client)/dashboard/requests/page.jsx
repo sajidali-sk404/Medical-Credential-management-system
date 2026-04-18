@@ -31,13 +31,13 @@ export default function RequestsPage() {
         }
       />
 
-      <div style={{ display: "flex", gap: "6px", marginBottom: "16px" }}>
+      <div className="flex gap-3 text-2xl mb-2 ">
         {STATUS_OPTS.map(s => (
           <button
             key={s}
             onClick={() => setStatus(s)}
             style={{
-              padding: "5px 12px", fontSize: "12px", borderRadius: "20px", cursor: "pointer",
+              padding: "5px 12px", fontSize: "16px", borderRadius: "20px", cursor: "pointer",
               border: "0.5px solid var(--color-border-tertiary)",
               background: status === s ? "#0d3d3d" : "var(--color-background-primary)",
               color:      status === s ? "#fff"    : "var(--color-text-secondary)",

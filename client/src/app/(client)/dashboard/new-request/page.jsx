@@ -3,7 +3,7 @@ import { RequestForm } from "@/components/requests/RequestForm"
 
 export default function NewRequestPage() {
   return (
-    <div>
+    <div className="p-4">
       <PageHeader
         title="New credentialing request"
         subtitle="Submit a new provider for credentialing review"
