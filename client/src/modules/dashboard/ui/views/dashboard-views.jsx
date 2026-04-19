@@ -7,7 +7,7 @@ import { RequestsTable }       from "@/components/dashboard/RequestsTable"
 import { Button }              from "@/components/ui/button"
 import api                     from "@/lib/axios"
 import Link                    from "next/link"
-import { FileBadge } from 'lucide-react';
+
 
 export default function DashboardPage() {
   const { user }                    = useAuth()
@@ -58,7 +58,7 @@ export default function DashboardPage() {
             View all
           </Link>
         </div>
-        <RequestsTable requests={requests} />
+        <RequestsTable requests={requests} basePath="/dashboard/request" />
       </div>
     </div>
   )

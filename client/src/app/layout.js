@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased bg-accent`}
       webcrx=""
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col bg-accent">
          <AuthProvider>
           {children}
         </AuthProvider>

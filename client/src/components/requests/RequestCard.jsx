@@ -1,39 +1,43 @@
-import Link      from "next/link"
-import { Badge } from "@/components/ui/Badge"
+import Link from "next/link";
+import { Badge } from "@/components/ui/Badge";
+import { Card, CardContent } from "@/components/ui/card";
 
 export function RequestCard({ request, basePath = "/requests" }) {
   return (
-    <div style={{
-      background:   "var(--color-background-primary)",
-      border:       "0.5px solid var(--color-border-tertiary)",
-      borderRadius: "10px",
-      padding:      "16px",
-    }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-        <p style={{ margin: 0, fontSize: "14px", fontWeight: 500 }}>
-          {request.provider_name}
+    <Card className="hover:shadow-md transition-all duration-200 border-muted">
+      <CardContent className="p-4 space-y-3">
+        
+        {/* Top Row */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-foreground">
+            {request.provider_name}
+          </h3>
+
+          <Badge
+            label={request.status.replace("_", " ")}
+            variant={request.status}
+          />
+        </div>
+
+        {/* Specialty */}
+        <p className="text-xs text-muted-foreground">
+          {request.specialty}
         </p>
-        <Badge label={request.status.replace("_", " ")} variant={request.status} />
-      </div>
-      <p style={{ margin: "0 0 12px", fontSize: "12px", color: "var(--color-text-secondary)" }}>
-        {request.specialty}
-      </p>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: "11px", color: "var(--color-text-tertiary)" }}>
-          {new Date(request.submitted_at).toLocaleDateString()}
-        </span>
-        <Link
-          href={`${basePath}/${request._id}`}
-          style={{
-            fontSize: "12px", color: "var(--color-text-info)",
-            border: "0.5px solid var(--color-border-info)",
-            padding: "4px 10px", borderRadius: "6px",
-            textDecoration: "none",
-          }}
-        >
-          View details
-        </Link>
-      </div>
-    </div>
-  )
+
+        {/* Bottom Row */}
+        <div className="flex items-center justify-between pt-2">
+          <span className="text-[11px] text-muted-foreground">
+            {new Date(request.submitted_at).toLocaleDateString()}
+          </span>
+
+          <Link
+            href={`${basePath}/${request._id}`}
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            View details →
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }

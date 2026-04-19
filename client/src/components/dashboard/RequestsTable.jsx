@@ -1,74 +1,72 @@
-"use client"
-import Link        from "next/link"
-import { Badge }   from "@/components/ui/Badge"
+"use client";
+import Link from "next/link";
+import { Badge } from "@/components/ui/Badge";
 
 export function RequestsTable({ requests = [], basePath = "/requests" }) {
   if (requests.length === 0) {
     return (
-      <div style={{
-        textAlign: "center", padding: "48px 0",
-        color: "var(--color-text-tertiary)", fontSize: "13px",
-      }}>
+      <div className="text-center py-12 text-sm text-muted-foreground">
         No requests found.
       </div>
-    )
+    );
   }
 
   return (
-    <div style={{ overflowX: "auto" }}>
-      <table style={{
-        width: "100%", borderCollapse: "collapse",
-        fontSize: "13px", tableLayout: "fixed",
-      }}>
-        <thead>
-          <tr style={{ borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
-            {["Provider", "Specialty", "Status", "Submitted", ""].map(h => (
-              <th key={h} style={{
-                textAlign: "left", padding: "8px 12px",
-                fontSize: "11px", fontWeight: 500,
-                color: "var(--color-text-tertiary)",
-                textTransform: "uppercase", letterSpacing: ".04em",
-              }}>
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {requests.map(req => (
-            <tr
-              key={req._id}
-              style={{ borderBottom: "0.5px solid var(--color-border-tertiary)" }}
-            >
-              <td style={{ padding: "12px", fontWeight: 500 }}>
-                {req.provider_name}
-              </td>
-              <td style={{ padding: "12px", color: "var(--color-text-secondary)" }}>
-                {req.specialty}
-              </td>
-              <td style={{ padding: "12px" }}>
-                <Badge label={req.status.replace("_", " ")} variant={req.status} />
-              </td>
-              <td style={{ padding: "12px", color: "var(--color-text-tertiary)", fontSize: "12px" }}>
-                {new Date(req.submitted_at).toLocaleDateString()}
-              </td>
-              <td style={{ padding: "12px", textAlign: "right" }}>
-                <Link
-                  href={`/dashboard${basePath}/${req._id}`}
-                  style={{
-                    fontSize: "12px", color: "var(--color-text-info)",
-                    border: "0.5px solid var(--color-border-info)",
-                    padding: "4px 10px", borderRadius: "6px",
-                    textDecoration: "none",
-                  }}
-                >
-                  View
-                </Link>
-              </td>
+    <div className="rounded-lg border bg-background w-4xl">
+      <div className="">
+        <table className="w-full text-sm">
+          
+          {/* Header */}
+          <thead className="bg-muted/50 border-b">
+            <tr className="text-xs uppercase tracking-wide text-muted-foreground">
+              <th className="text-left px-4 py-3 font-medium">Provider</th>
+              <th className="text-left px-4 py-3 font-medium">Specialty</th>
+              <th className="text-left px-4 py-3 font-medium">Status</th>
+              <th className="text-left px-4 py-3 font-medium">Submitted</th>
+              <th className="text-right px-4 py-3 font-medium"></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          {/* Body */}
+          <tbody>
+            {requests.map((req) => (
+              <tr
+                key={req._id}
+                className="border-b last:border-none hover:bg-muted/40 transition-colors"
+              >
+                <td className="px-4 py-3 font-medium text-foreground">
+                  {req.provider_name}
+                </td>
+
+                <td className="px-4 py-3 text-muted-foreground">
+                  {req.specialty}
+                </td>
+
+                <td className="px-4 py-3">
+                  <Badge
+                    label={req.status.replace("_", " ")}
+                    variant={req.status}
+                  />
+                </td>
+
+                <td className="px-4 py-3 text-xs text-muted-foreground">
+                  {new Date(req.submitted_at).toLocaleDateString()}
+                </td>
+
+                <td className="px-4 py-3 text-right">
+                  <Link
+                    href={`${basePath}/${req._id}`}
+                    className="text-primary text-xs font-medium hover:underline"
+                  >
+                    View →
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+
+        </table>
+      </div>
     </div>
-  )
+  );
 }

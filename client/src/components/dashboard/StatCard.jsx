@@ -1,26 +1,39 @@
 export function StatCard({ icon, label, value, color = "info" }) {
-  const colors = {
-    info:    "var(--color-text-info)",
-    warning: "var(--color-text-warning)",
-    success: "var(--color-text-success)",
-    danger:  "var(--color-text-danger)",
-    default: "var(--color-text-primary)",
-  }
-  const iconColors = {
-    info: "bg-blue-300",
-    pending: "bg-yellow-300",
-    approved: "bg-green-300",
-    rejected: "bg-red-300",
-  }
+  const colorStyles = {
+    info: "text-blue-600",
+    warning: "text-yellow-600",
+    success: "text-green-600",
+    danger: "text-red-600",
+    default: "text-foreground",
+  };
+
+  const iconBg = {
+    info: "bg-blue-100",
+    pending: "bg-yellow-100",
+    approved: "bg-green-100",
+    rejected: "bg-red-100",
+  };
+
   return (
-    <div className="var(--color-background-secondary) border m-3 bg-white font-sans rounded-2xl p-5">
-        <img className={`w-8 h-8 rounded p-1 mb-2 ${iconColors[label.toLowerCase()] || 'bg-blue-300'}`} src={icon} alt="img.svg" />
-      <p className="var(--color-text-tertiary)">
+    <div className="rounded-2xl border bg-background p-5 shadow-sm hover:shadow-md transition-all duration-200">
+      
+      {/* Icon */}
+      <div
+        className={`w-10 h-10 flex items-center justify-center rounded-lg mb-3 
+        ${iconBg[label?.toLowerCase()] || "bg-blue-100"}`}
+      >
+        <img src={icon} alt="icon" className="w-5 h-5" />
+      </div>
+
+      {/* Label */}
+      <p className="text-xs text-muted-foreground mb-1">
         {label}
       </p>
-      <p style={{ margin: 0, fontSize: "26px", fontWeight: 500, color: colors[color] }}>
+
+      {/* Value */}
+      <p className={`text-2xl font-semibold ${colorStyles[color]}`}>
         {value ?? "—"}
       </p>
     </div>
-  )
+  );
 }

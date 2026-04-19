@@ -1,158 +1,177 @@
-"use client"
-import { useState, useEffect } from "react"
-import { use }                 from "react"
-import { PageHeader }          from "@/components/layout/PageHeader"
-import { Badge }               from "@/components/ui/Badge"
-import { Button }              from "@/components/ui/button"
-import { StatusTimeline }      from "@/components/StatusTimeLine"
-import api                     from "@/lib/axios"
+"use client";
+import { useState, useEffect } from "react";
+import { use } from "react";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { StatusTimeline } from "@/components/StatusTimeLine";
+import api from "@/lib/axios";
 
 const NEXT_STATUS = {
-  pending:   ["in_review"],
+  pending: ["in_review"],
   in_review: ["approved", "rejected"],
-  approved:  [],
-  rejected:  [],
-}
+  approved: [],
+  rejected: [],
+};
 
 export default function AdminRequestDetailPage({ params }) {
-  const { id }                = use(params)
-  const [request, setRequest] = useState(null)
-  const [logs, setLogs]       = useState([])
-  const [docs, setDocs]       = useState([])
-  const [note, setNote]       = useState("")
-  const [loading, setLoading] = useState(true)
-  const [updating, setUpdating] = useState(false)
+  const { id } = use(params);
+
+  const [request, setRequest] = useState(null);
+  const [logs, setLogs] = useState([]);
+  const [docs, setDocs] = useState([]);
+  const [note, setNote] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
 
   const fetchRequest = () => {
     api.get(`/api/admin/requests/${id}`)
       .then(r => {
-        setRequest(r.data)
-        setLogs(r.data.status_logs)
-        setDocs(r.data.documents)
+        setRequest(r.data);
+        setLogs(r.data.status_logs);
+        setDocs(r.data.documents);
       })
-      .finally(() => setLoading(false))
-  }
+      .finally(() => setLoading(false));
+  };
 
-  useEffect(() => { fetchRequest() }, [id])
+  useEffect(() => { fetchRequest(); }, [id]);
 
   const handleStatusUpdate = async (newStatus) => {
-    setUpdating(true)
+    setUpdating(true);
     try {
-      await api.patch(`/api/admin/requests/${id}/status`, { status: newStatus, note })
-      setNote("")
-      fetchRequest()
+      await api.patch(`/api/admin/requests/${id}/status`, {
+        status: newStatus,
+        note,
+      });
+      setNote("");
+      fetchRequest();
     } catch (err) {
-      alert(err.response?.data?.message || "Update failed")
+      alert(err.response?.data?.message || "Update failed");
     } finally {
-      setUpdating(false)
+      setUpdating(false);
     }
+  };
+
+  if (loading) {
+    return <div className="text-sm text-muted-foreground">Loading...</div>;
   }
 
-  if (loading) return <p style={{ color: "var(--color-text-tertiary)" }}>Loading...</p>
-  if (!request) return <p>Request not found.</p>
+  if (!request) return <div>Request not found.</div>;
 
-  const nextStatuses = NEXT_STATUS[request.status] || []
+  const nextStatuses = NEXT_STATUS[request.status] || [];
 
   return (
-    <div>
+    <div className="space-y-6">
+
+      {/* Header */}
       <PageHeader
         title={request.provider_name}
         subtitle={`${request.specialty} · ${request.client_id?.user_id?.name || "Unknown client"}`}
-        action={<Badge label={request.status.replace("_", " ")} variant={request.status} />}
+        action={
+          <Badge
+            label={request.status.replace("_", " ")}
+            variant={request.status}
+          />
+        }
       />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "20px" }}>
+      {/* Layout */}
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
 
-        {/* Left — documents + status update */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        {/* LEFT */}
+        <div className="space-y-6">
 
-          {/* Status update panel */}
+          {/* Status Update */}
           {nextStatuses.length > 0 && (
-            <div style={{
-              background: "var(--color-background-primary)", borderRadius: "10px",
-              border: "0.5px solid var(--color-border-tertiary)", padding: "20px",
-            }}>
-              <p style={{ margin: "0 0 12px", fontSize: "14px", fontWeight: 500 }}>
-                Update status
-              </p>
-              <textarea
-                value={note}
-                onChange={e => setNote(e.target.value)}
-                placeholder="Add a note (optional)..."
-                rows={2}
-                style={{
-                  width: "100%", padding: "8px 12px", fontSize: "12px",
-                  border: "0.5px solid var(--color-border-tertiary)",
-                  borderRadius: "7px", background: "var(--color-background-secondary)",
-                  color: "var(--color-text-primary)", outline: "none",
-                  resize: "vertical", boxSizing: "border-box", marginBottom: "10px",
-                }}
-              />
-              <div style={{ display: "flex", gap: "8px" }}>
-                {nextStatuses.map(s => (
-                  <Button
-                    key={s}
-                    variant={s === "rejected" ? "danger" : "primary"}
-                    onClick={() => handleStatusUpdate(s)}
-                    disabled={updating}
-                  >
-                    {updating ? "Updating..." : `Mark ${s.replace("_", " ")}`}
-                  </Button>
-                ))}
-              </div>
-            </div>
+            <Card>
+              <CardContent className="p-5 space-y-4">
+                <h2 className="text-sm font-semibold">Update Status</h2>
+
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Add a note (optional)..."
+                  rows={2}
+                  className="w-full border rounded-md px-3 py-2 text-sm bg-background resize-none"
+                />
+
+                <div className="flex flex-wrap gap-2">
+                  {nextStatuses.map((s) => (
+                    <Button
+                      key={s}
+                      variant={s === "rejected" ? "destructive" : "default"}
+                      onClick={() => handleStatusUpdate(s)}
+                      disabled={updating}
+                    >
+                      {updating ? "Updating..." : `Mark ${s.replace("_", " ")}`}
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           {/* Documents */}
-          <div style={{
-            background: "var(--color-background-primary)", borderRadius: "10px",
-            border: "0.5px solid var(--color-border-tertiary)", padding: "20px",
-          }}>
-            <p style={{ margin: "0 0 12px", fontSize: "14px", fontWeight: 500 }}>
-              Uploaded documents ({docs.length})
-            </p>
-            {docs.length === 0
-              ? <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)" }}>No documents.</p>
-              : docs.map(doc => (
-                <div key={doc._id} style={{
-                  display: "flex", alignItems: "center", gap: "10px",
-                  padding: "10px 0", borderBottom: "0.5px solid var(--color-border-tertiary)",
-                }}>
-                  <div style={{
-                    width: "32px", height: "36px", borderRadius: "4px",
-                    background: doc.file_type === "application/pdf"
-                      ? "var(--color-background-danger)" : "var(--color-background-info)",
-                    color: doc.file_type === "application/pdf"
-                      ? "var(--color-text-danger)" : "var(--color-text-info)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: "9px", fontWeight: 500,
-                  }}>
-                    {doc.file_type === "application/pdf" ? "PDF" : "IMG"}
-                  </div>
-                  <span style={{ flex: 1, fontSize: "12px", fontWeight: 500 }}>{doc.file_name}</span>
-                  <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
-                    style={{
-                      fontSize: "11px", color: "var(--color-text-info)",
-                      border: "0.5px solid var(--color-border-info)",
-                      padding: "3px 8px", borderRadius: "5px", textDecoration: "none",
-                    }}>
-                    View
-                  </a>
+          <Card>
+            <CardContent className="p-5 space-y-4">
+              <h2 className="text-sm font-semibold">
+                Documents ({docs.length})
+              </h2>
+
+              {docs.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No documents uploaded.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {docs.map((doc) => (
+                    <div
+                      key={doc._id}
+                      className="flex items-center gap-3 p-3 border rounded-md hover:bg-muted/40 transition"
+                    >
+                      {/* File type */}
+                      <div
+                        className={`w-9 h-9 flex items-center justify-center rounded-md text-xs font-semibold
+                        ${doc.file_type === "application/pdf"
+                          ? "bg-red-100 text-red-600"
+                          : "bg-blue-100 text-blue-600"}`}
+                      >
+                        {doc.file_type === "application/pdf" ? "PDF" : "IMG"}
+                      </div>
+
+                      {/* Name */}
+                      <div className="flex-1 text-sm font-medium truncate">
+                        {doc.file_name}
+                      </div>
+
+                      {/* Action */}
+                      <a
+                        href={doc.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary font-medium hover:underline"
+                      >
+                        View →
+                      </a>
+                    </div>
+                  ))}
                 </div>
-              ))
-            }
-          </div>
+              )}
+            </CardContent>
+          </Card>
+
         </div>
 
-        {/* Right — timeline */}
-        <div style={{
-          background: "var(--color-background-primary)", borderRadius: "10px",
-          border: "0.5px solid var(--color-border-tertiary)", padding: "20px",
-        }}>
-          <p style={{ margin: "0 0 16px", fontSize: "14px", fontWeight: 500 }}>Status history</p>
-          <StatusTimeline logs={logs} />
-        </div>
+        {/* RIGHT */}
+        <Card>
+          <CardContent className="p-5 space-y-4">
+            <h2 className="text-sm font-semibold">Status History</h2>
+            <StatusTimeline logs={logs} />
+          </CardContent>
+        </Card>
+
       </div>
     </div>
-  )
+  );
 }

@@ -14,7 +14,7 @@ export function Badge({ label, variant }) {
   return (
     <span style={{
       display:      "inline-block",
-      fontSize:     "10px",
+      fontSize:     "12px",
       fontWeight:   500,
       padding:      "3px 9px",
       borderRadius: "20px",
