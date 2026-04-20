@@ -18,94 +18,97 @@ export default function RequestDetailPage({ params }) {
         api.get(`/api/requests/${id}`)
             .then(r => {
                 setRequest(r.data)
-                setDocuments(r.data.documents)
-                setLogs(r.data.status_logs)
+                setDocuments(r.data.documents || [])
+                setLogs(r.data.status_logs || [])
             })
             .finally(() => setLoading(false))
     }
 
     useEffect(() => { fetchRequest() }, [id])
 
-    if (loading) return <p style={{ color: "var(--color-text-tertiary)" }}>Loading...</p>
+    if (loading) return <p className="text-gray-400">Loading...</p>
     if (!request) return <p>Request not found.</p>
 
+    const handleDownload = async (url, name) => {
+        const res = await fetch(url)
+        const blob = await res.blob()
+
+        const link = document.createElement("a")
+        link.href = URL.createObjectURL(blob)
+        link.download = name
+        link.click()
+    }
+
     return (
-        <div>
+        <div className="p-6 space-y-6">
+
             <PageHeader
                 title={request.provider_name}
                 subtitle={request.specialty}
                 action={<Badge label={request.status.replace("_", " ")} variant={request.status} />}
             />
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "20px" }}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                {/* Left — documents */}
-                <div style={{
-                    background: "var(--color-background-primary)",
-                    borderRadius: "10px", border: "0.5px solid var(--color-border-tertiary)",
-                    padding: "20px",
-                }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
-                        <p style={{ margin: 0, fontSize: "14px", fontWeight: 500 }}>Documents</p>
-                        <DocumentUpload
-                            requestId={id}
-                            onUploaded={(doc) => setDocuments(prev => [...prev, doc])}
-                        />
+                {/* DOCUMENTS */}
+                <div className="lg:col-span-2 bg-white rounded-xl border shadow-sm p-5">
+
+                    <div className="flex items-center mb-2 gap-2">
+                        <div className="px-3 py-1.5 rounded-lg border text-xs font-medium hover:bg-gray-50 transition cursor-pointer">
+                            <DocumentUpload
+                                requestId={id}
+                                onUploaded={(doc) => setDocuments(prev => [...prev, doc])}
+                            />
+                        </div>
                     </div>
-
                     {documents.length === 0 ? (
-                        <p style={{ fontSize: "13px", color: "var(--color-text-tertiary)" }}>
+                        <p className="text-sm text-gray-400">
                             No documents uploaded yet.
                         </p>
                     ) : (
-                        documents.map(doc => (
-                            <div key={doc._id} style={{
-                                display: "flex", alignItems: "center", gap: "10px",
-                                padding: "10px 0", borderBottom: "0.5px solid var(--color-border-tertiary)",
-                            }}>
-                                <div style={{
-                                    width: "32px", height: "36px", borderRadius: "4px",
-                                    background: doc.file_type === "application/pdf"
-                                        ? "var(--color-background-danger)"
-                                        : "var(--color-background-info)",
-                                    color: doc.file_type === "application/pdf"
-                                        ? "var(--color-text-danger)"
-                                        : "var(--color-text-info)",
-                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                    fontSize: "9px", fontWeight: 500, flexShrink: 0,
-                                }}>
-                                    {doc.file_type === "application/pdf" ? "PDF" : "IMG"}
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    <p style={{ margin: 0, fontSize: "12px", fontWeight: 500 }}>{doc.file_name}</p>
-                                    <p style={{ margin: 0, fontSize: "11px", color: "var(--color-text-tertiary)" }}>
-                                        {new Date(doc.uploaded_at).toLocaleDateString()}
-                                    </p>
-                                </div>
-                                <a
-                                    href={doc.file_url.replace("/upload/", "/upload/fl_inline/")}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{
-                                        fontSize: "11px", color: "var(--color-text-info)",
-                                        border: "0.5px solid var(--color-border-info)",
-                                        padding: "3px 8px", borderRadius: "5px", textDecoration: "none",
-                                    }}
+                        <div className="space-y-2">
+                            {documents.map(doc => (
+                                <div
+                                    key={doc._id}
+                                    className="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition"
                                 >
-                                    View
-                                </a>
-                            </div>
-                        ))
+                                    <div className="flex items-center gap-3">
+
+                                        {/* File icon */}
+                                        <div className="w-10 h-10 rounded-lg bg-white border flex items-center justify-center text-xs font-semibold">
+                                            {doc.file_type === "application/pdf" ? "PDF" : "IMG"}
+                                        </div>
+
+                                        {/* Info */}
+                                        <div>
+                                            <p className="text-sm font-medium">{doc.file_name}</p>
+                                            <p className="text-xs text-gray-400">
+                                                {new Date(doc.uploaded_at).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleDownload(doc.file_url, doc.file_name)}
+                                            className="text-xs px-3 py-1 rounded-md border text-gray-700 hover:bg-gray-100"
+                                        >
+                                            Download
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </div>
 
-                {/* Right — status timeline */}
-                <div style={{
-                    background: "var(--color-background-primary)",
-                    borderRadius: "10px", border: "0.5px solid var(--color-border-tertiary)",
-                    padding: "20px",
-                }}>
-                    <p style={{ margin: "0 0 16px", fontSize: "14px", fontWeight: 500 }}>Status history</p>
+                {/* TIMELINE */}
+                <div className="bg-white rounded-xl border shadow-sm p-5 h-fit sticky top-6">
+                    <h2 className="text-sm font-semibold text-gray-700 mb-4">
+                        Status History
+                    </h2>
+
                     <StatusTimeline logs={logs} />
                 </div>
             </div>

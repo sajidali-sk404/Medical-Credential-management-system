@@ -32,11 +32,6 @@ export default function DashboardPage() {
       <PageHeader
         title={`Welcome back, ${user?.name}`}
         subtitle="Here's your credentialing overview"
-        action={
-          <Link href="/dashboard/new-request">
-            <Button>+ New request</Button>
-          </Link>
-        }
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "28px" }}>
@@ -58,7 +53,7 @@ export default function DashboardPage() {
             View all
           </Link>
         </div>
-        <RequestsTable requests={requests} basePath="/dashboard/request" />
+        <RequestsTable requests={requests} basePath="/dashboard/requests" />
       </div>
     </div>
   )

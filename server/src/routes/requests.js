@@ -8,13 +8,14 @@ import {
   uploadDocument,
   deleteDocument,
   submitTicket,
+  getMyTickets,
 } from '../controllers/requests.js'
 import {
   verifyToken,
   requireClient,
   ownsRequest,
 } from '../middleware/auth.js'
-import { uploadFile } from "../middleware/upload.js";
+import { uploadFile, uploadImage } from "../middleware/upload.js";
 
 
 const router = express.Router()
@@ -67,6 +68,11 @@ router.post('/support',
   verifyToken,
   requireClient,
   submitTicket
+)
+router.get('/support/my',
+  verifyToken,
+  requireClient,
+  getMyTickets
 )
 
 export default router

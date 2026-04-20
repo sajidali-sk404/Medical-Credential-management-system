@@ -221,3 +221,15 @@ export const submitTicket = async (req, res) => {
     res.status(500).json({ message: 'Server error' })
   }
 }
+
+// controllers/requests.js — add this function
+export const getMyTickets = async (req, res) => {
+  try {
+    const tickets = await SupportTicket.find({ client_id: req.clientProfile._id })
+      .sort({ createdAt: -1 })
+    res.json({ tickets })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: "Server error" })
+  }
+}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AdminDashboardSidebar } from "@/modules/admin-dashboard/ui/components/admin-dashboard-sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 
 export default function AdminLayout({ children }) {
     const { loading, isAdmin } = useAuth()

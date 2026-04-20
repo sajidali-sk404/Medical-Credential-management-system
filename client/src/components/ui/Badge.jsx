@@ -10,7 +10,9 @@ const VARIANTS = {
 }
 
 export function Badge({ label, variant }) {
-  const style = VARIANTS[variant] || VARIANTS["pending"]
+  const normalized = variant?.toLowerCase().trim()
+  const style = VARIANTS[normalized] || VARIANTS["pending"]
+
   return (
     <span style={{
       display:      "inline-block",

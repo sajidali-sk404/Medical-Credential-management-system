@@ -4,7 +4,7 @@ import { DashboardSidebar } from "@/modules/dashboard/ui/components/dashboard-si
 import { useAuth } from "../../../../context/AuthContext"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
-import { Navbar } from "@/components/layout/Navbar";
+  
 
 
 export default function ClientLayout({ children }) {
@@ -26,10 +26,7 @@ export default function ClientLayout({ children }) {
   return (
     <SidebarProvider>
       <DashboardSidebar>
-      <Navbar />
-        <main className="bg-accent">
           {children}
-        </main>
       </DashboardSidebar>
     </SidebarProvider>
   )

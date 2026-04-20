@@ -56,7 +56,7 @@ export default function RequestsPage() {
       }}>
         {loading
           ? <p style={{ color: "var(--color-text-tertiary)", fontSize: "13px" }}>Loading...</p>
-          : <RequestsTable requests={requests} />
+          : <RequestsTable requests={requests} basePath="/dashboard/requests" />
         }
       </div>
     </div>

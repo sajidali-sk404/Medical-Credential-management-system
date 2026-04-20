@@ -217,7 +217,7 @@ export const getClients = async (req, res) => {
 export const getClientById = async (req, res) => {
   try {
     const client = await Client.findById(req.params.id)
-      .populate('user_id', 'name email created_at')
+      .populate('user_id', 'name email image created_at')
 
     if (!client) {
       return res.status(404).json({ message: 'Client not found' })

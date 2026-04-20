@@ -45,7 +45,7 @@ export function RequestsTable({ requests = [], basePath = "/requests" }) {
                 <td className="px-4 py-3">
                   <Badge
                     label={req.status.replace("_", " ")}
-                    variant={req.status}
+                    variant={req.status?.toLowerCase().trim()}
                   />
                 </td>
 

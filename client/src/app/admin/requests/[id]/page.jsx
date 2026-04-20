@@ -35,6 +35,16 @@ export default function AdminRequestDetailPage({ params }) {
       .finally(() => setLoading(false));
   };
 
+  const handleDownload = async (url, name) => {
+    const res = await fetch(url)
+    const blob = await res.blob()
+
+    const link = document.createElement("a")
+    link.href = URL.createObjectURL(blob)
+    link.download = name
+    link.click()
+  }
+
   useEffect(() => { fetchRequest(); }, [id]);
 
   const handleStatusUpdate = async (newStatus) => {
@@ -134,8 +144,8 @@ export default function AdminRequestDetailPage({ params }) {
                       <div
                         className={`w-9 h-9 flex items-center justify-center rounded-md text-xs font-semibold
                         ${doc.file_type === "application/pdf"
-                          ? "bg-red-100 text-red-600"
-                          : "bg-blue-100 text-blue-600"}`}
+                            ? "bg-red-100 text-red-600"
+                            : "bg-blue-100 text-blue-600"}`}
                       >
                         {doc.file_type === "application/pdf" ? "PDF" : "IMG"}
                       </div>
@@ -146,14 +156,14 @@ export default function AdminRequestDetailPage({ params }) {
                       </div>
 
                       {/* Action */}
-                      <a
-                        href={doc.file_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-primary font-medium hover:underline"
-                      >
-                        View →
-                      </a>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleDownload(doc.file_url, doc.file_name)}
+                          className="text-xs px-3 py-1 rounded-md border text-gray-700 hover:bg-gray-100"
+                        >
+                          Download
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -23,11 +23,17 @@ export const uploadImage = multer({
 export const uploadFile = multer({
   storage,
   fileFilter: (req, file, cb) => {
-    const allowed = ["application/pdf"];
+    const allowed = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ];
+
     if (allowed.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error("Only PDF files are allowed"), false);
+      cb(new Error("Only PDF, JPG, PNG, WEBP allowed"), false);
     }
   },
   limits: {
