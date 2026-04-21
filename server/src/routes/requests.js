@@ -9,6 +9,7 @@ import {
   deleteDocument,
   submitTicket,
   getMyTickets,
+  getStats,
 } from '../controllers/requests.js'
 import {
   verifyToken,
@@ -23,6 +24,10 @@ const router = express.Router()
 // ── All routes require a valid JWT + client role ──────────────────
 // Note: /my/stats must come BEFORE /:id
 // otherwise Express matches "my" as the :id param
+
+router.get('/stats',
+  getStats
+)
 
 router.get('/my/stats',
   verifyToken,

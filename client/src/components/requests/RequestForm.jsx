@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Check, UploadCloud, FileText, X } from "lucide-react";
 import api from "@/lib/axios";
 
 const SPECIALTIES = [
@@ -66,10 +67,7 @@ export function RequestForm() {
           files.map(file => {
             const formData = new FormData();
             formData.append("document", file);
-            return api.post(
-              `/api/requests/${newRequest._id}/documents`,
-              formData
-            );
+            return api.post(`/api/requests/${newRequest._id}/documents`, formData);
           })
         );
       }
@@ -83,92 +81,107 @@ export function RequestForm() {
   };
 
   return (
-    <div className="max-w-xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6">
 
-      {/* Progress */}
-      <div className="flex justify-between text-xs">
+      {/* 🔥 Progress Stepper */}
+      <div className="flex items-center justify-between">
         {["Provider","Notes","Documents","Review"].map((label, i) => (
-          <div key={i} className="flex flex-col items-center gap-1">
-            <div className={`h-7 w-7 flex items-center justify-center rounded-full text-xs font-medium
-              ${step >= i+1 ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}>
-              {step > i+1 ? "✓" : i+1}
+          <div key={i} className="flex-1 flex items-center">
+            
+            {/* circle */}
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold
+              ${step > i+1 ? "bg-green-500 text-white" :
+                step === i+1 ? "bg-primary text-white" :
+                "bg-gray-200 text-gray-500"}`}>
+              {step > i+1 ? <Check className="w-4 h-4"/> : i+1}
             </div>
-            <span className={step === i+1 ? "text-foreground font-medium" : "text-muted-foreground"}>
+
+            {/* label */}
+            <span className={`ml-2 text-xs font-medium 
+              ${step === i+1 ? "text-gray-900" : "text-gray-400"}`}>
               {label}
             </span>
+
+            {/* line */}
+            {i < 3 && (
+              <div className={`flex-1 h-[2px] mx-2 
+                ${step > i+1 ? "bg-green-500" : "bg-gray-200"}`} />
+            )}
           </div>
         ))}
       </div>
 
-      <Card>
-        <CardContent className="p-5 space-y-4">
+      <Card className="rounded-2xl shadow-sm border">
+        <CardContent className="p-6 space-y-5">
 
-          {/* Step 1 */}
+          {/* STEP 1 */}
           {step === 1 && (
             <>
-              <h2 className="text-base font-semibold">Provider Information</h2>
+              <h2 className="text-lg font-semibold">Provider Information</h2>
 
-              <Input
-                placeholder="Dr. Bilal Raza"
-                value={form.provider_name}
-                onChange={update("provider_name")}
-              />
+              <div className="space-y-3">
+                <Input
+                  placeholder="Dr. Bilal Raza"
+                  value={form.provider_name}
+                  onChange={update("provider_name")}
+                />
 
-              <select
-                value={form.specialty}
-                onChange={update("specialty")}
-                className="w-full border rounded-md px-3 py-2 text-sm bg-background"
-              >
-                <option value="">Select specialty</option>
-                {SPECIALTIES.map(s => <option key={s}>{s}</option>)}
-              </select>
+                <select
+                  value={form.specialty}
+                  onChange={update("specialty")}
+                  className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 focus:ring-2 focus:ring-primary outline-none"
+                >
+                  <option value="">Select specialty</option>
+                  {SPECIALTIES.map(s => <option key={s}>{s}</option>)}
+                </select>
+              </div>
 
               {error && <p className="text-xs text-red-500">{error}</p>}
 
-              <Button
-                className="w-full"
-                onClick={() => {
-                  if (!form.provider_name || !form.specialty) {
-                    setError("Fill required fields");
-                    return;
-                  }
-                  setError("");
-                  setStep(2);
-                }}
-              >
+              <Button className="w-full" onClick={() => {
+                if (!form.provider_name || !form.specialty) {
+                  setError("Fill required fields");
+                  return;
+                }
+                setError("");
+                setStep(2);
+              }}>
                 Continue →
               </Button>
             </>
           )}
 
-          {/* Step 2 */}
+          {/* STEP 2 */}
           {step === 2 && (
             <>
-              <h2 className="text-base font-semibold">Additional Notes</h2>
+              <h2 className="text-lg font-semibold">Additional Notes</h2>
 
               <textarea
                 value={form.notes}
                 onChange={update("notes")}
                 rows={4}
                 placeholder="Optional notes..."
-                className="w-full border rounded-md px-3 py-2 text-sm bg-background resize-none"
+                className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 focus:ring-2 focus:ring-primary outline-none resize-none"
               />
 
               <div className="flex gap-2">
-                <Button variant="secondary" onClick={() => setStep(1)}>Back</Button>
+                <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
                 <Button onClick={() => setStep(3)}>Continue →</Button>
               </div>
             </>
           )}
 
-          {/* Step 3 */}
+          {/* STEP 3 */}
           {step === 3 && (
             <>
-              <h2 className="text-base font-semibold">Upload Documents</h2>
+              <h2 className="text-lg font-semibold">Upload Documents</h2>
 
-              <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 cursor-pointer hover:bg-muted transition">
-                <span className="text-sm font-medium">Click to upload</span>
-                <span className="text-xs text-muted-foreground">PDF, JPG, PNG (max 10MB)</span>
+              {/* Upload Box */}
+              <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-8 cursor-pointer hover:bg-gray-50 transition">
+                <UploadCloud className="w-6 h-6 text-gray-400 mb-2"/>
+                <p className="text-sm font-medium">Click or drag files</p>
+                <p className="text-xs text-gray-400">PDF, JPG, PNG (max 10MB)</p>
+
                 <input
                   type="file"
                   multiple
@@ -177,28 +190,41 @@ export function RequestForm() {
                 />
               </label>
 
-              {files.map((file, i) => (
-                <div key={i} className="flex justify-between items-center border rounded-md px-3 py-2 text-sm">
-                  <span className="truncate">{file.name}</span>
-                  <button onClick={() => removeFile(i)}>✕</button>
-                </div>
-              ))}
+              {/* Files */}
+              <div className="space-y-2">
+                {files.map((file, i) => (
+                  <div key={i} className="flex items-center justify-between bg-gray-50 border rounded-lg px-3 py-2">
+                    
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-gray-500"/>
+                      <span className="text-sm truncate">{file.name}</span>
+                    </div>
+
+                    <button
+                      onClick={() => removeFile(i)}
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      <X className="w-4 h-4"/>
+                    </button>
+                  </div>
+                ))}
+              </div>
 
               {error && <p className="text-xs text-red-500">{error}</p>}
 
               <div className="flex gap-2">
-                <Button variant="secondary" onClick={() => setStep(2)}>Back</Button>
+                <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
                 <Button onClick={() => setStep(4)}>Continue →</Button>
               </div>
             </>
           )}
 
-          {/* Step 4 */}
+          {/* STEP 4 */}
           {step === 4 && (
             <>
-              <h2 className="text-base font-semibold">Review</h2>
+              <h2 className="text-lg font-semibold">Review</h2>
 
-              <div className="text-sm space-y-2">
+              <div className="bg-gray-50 rounded-xl p-4 text-sm space-y-2 border">
                 <p><strong>Provider:</strong> {form.provider_name}</p>
                 <p><strong>Specialty:</strong> {form.specialty}</p>
                 <p><strong>Notes:</strong> {form.notes || "—"}</p>
@@ -208,7 +234,7 @@ export function RequestForm() {
               {error && <p className="text-xs text-red-500">{error}</p>}
 
               <div className="flex gap-2">
-                <Button variant="secondary" onClick={() => setStep(3)}>Back</Button>
+                <Button variant="outline" onClick={() => setStep(3)}>Back</Button>
                 <Button onClick={handleSubmit} disabled={loading}>
                   {loading ? "Submitting..." : "Submit"}
                 </Button>

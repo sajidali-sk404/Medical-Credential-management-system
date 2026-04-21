@@ -41,10 +41,11 @@ export default function AdminDashboardPage() {
       />
 
       {/* Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard icon="/filebage.svg" label="Total requests" value={stats?.total} color="default" />
         <StatCard icon="/pendingfile.svg" label="Pending" value={stats?.pending} color="warning" />
         <StatCard icon="/greentik.svg" label="Approved" value={stats?.approved} color="success" />
+        <StatCard icon="/rejectedFile.svg" label="Rejected" value={stats?.rejected} color="danger" />
         <StatCard icon="/openticketsfile.svg" label="Open tickets" value={stats?.open_tickets} color="danger" />
       </div>
 

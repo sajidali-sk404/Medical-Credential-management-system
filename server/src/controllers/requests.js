@@ -129,37 +129,65 @@ export const getRequestById = async (req, res) => {
 // Upload a file — Multer puts it in req.file as a buffer
 export const uploadDocument = async (req, res) => {
   try {
+    // ── BASIC CHECKS ───────────────────────────
     if (!req.file) {
-      return res.status(400).json({ message: 'No file provided' })
+      return res.status(400).json({ message: "No file provided" })
     }
 
     if (!req.credRequest) {
-      return res.status(400).json({ message: "Invalid request context" });
+      return res.status(400).json({ message: "Invalid request context" })
     }
 
-    const allowed = ["application/pdf"];
-    if (!allowed.includes(req.file.mimetype)) {
-      return res.status(400).json({ message: "Invalid file type" });
+    const { mimetype, originalname, buffer } = req.file
+
+    // ── DEBUG (VERY IMPORTANT) ─────────────────
+    console.log("MIME:", mimetype)
+    console.log("NAME:", originalname)
+
+    // ── VALIDATION (FIXED) ─────────────────────
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ]
+
+    const isValidMime = allowedTypes.includes(mimetype)
+
+    const isPdfByName = originalname
+      .toLowerCase()
+      .endsWith(".pdf")
+
+    if (!isValidMime && !isPdfByName) {
+      return res.status(400).json({
+        message: "Invalid file type",
+      })
     }
 
-    // Upload buffer → Cloudinary, organised by request ID
-    const result = await uploadToCloudinary(
-      req.file.buffer,
-      req.file.mimetype,
-      `credentialing/${req.credRequest._id}`
-    )
-
-    const document = await Document.create({
-      request_id: req.credRequest._id,
-      file_name: req.file.originalname,
-      file_url: result.secure_url,    // permanent CDN URL — all you store
-      file_type: req.file.mimetype,
-      public_id: result.public_id,     // needed to delete from Cloudinary later
+    // ── UPLOAD ─────────────────────────────────
+    const result = await uploadToCloudinary({
+      buffer,
+      mimetype,
+      originalname,
+      folder: `credentialing/${req.credRequest._id}`,
     })
 
+    // ── SAVE TO DB ─────────────────────────────
+    const document = await Document.create({
+      request_id: req.credRequest._id,
+      file_name: originalname,
+      file_url: result.url,
+      file_type: mimetype || "unknown",
+      public_id: result.public_id,
+      file_size: result.bytes, // ✅ useful
+    })
+
+    // ── RESPONSE ───────────────────────────────
     res.status(201).json(document)
+
   } catch (err) {
-    console.error(err)
+    console.error("UPLOAD ERROR:", err)
+
     res.status(500).json({
       message: "Upload failed",
       error: err.message,
@@ -231,5 +259,25 @@ export const getMyTickets = async (req, res) => {
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: "Server error" })
+  }
+}
+
+export const getStats = async (req, res) => {
+  try {
+    const [requestStats] = await Promise.all([
+      CredentialingRequest.aggregate([
+        { $group: { _id: '$status', count: { $sum: 1 } } }
+      ]),
+    ])
+    const result = { total: 0, pending: 0, approved: 0 }
+    requestStats.forEach(s => {
+      result[s._id] = s.count
+      result.total += s.count
+    })
+
+    res.json(result)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Server error' })
   }
 }

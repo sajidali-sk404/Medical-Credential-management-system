@@ -10,66 +10,81 @@ cloudinary.config({
 })
 
 // ── UPLOAD ───────────────────────────────────
-export const uploadToCloudinary = async ({
-  buffer,
-  mimetype,
-  originalname,
-  folder = "uploads",
-}) => {
+export const uploadToCloudinary = async (file) => {
+  if (!file) {
+    throw new Error("File missing")
+  }
+
+  const {
+    buffer,
+    mimetype,
+    originalname,
+    folder = "uploads",
+  } = file
+
+  if (!buffer || !originalname) {
+    console.log("INVALID FILE:", file)
+    throw new Error("Invalid file object")
+  }
+
+  // ✅ Fix weird file names (important)
+  const ext = path.extname(originalname)
+  const baseName = path
+    .basename(originalname, ext)
+    .replace(/[^a-zA-Z0-9-_]/g, "_") // clean filename
+
+  const publicId = `${Date.now()}-${baseName}`
+
+  // ✅ Handle bad MIME types (your main bug)
+  let resourceType = "auto"
+
+  if (
+    mimetype === "application/pdf" ||
+    originalname.toLowerCase().endsWith(".pdf")
+  ) {
+    resourceType = "raw"
+  }
+
+  const uploadOptions = {
+    folder,
+    resource_type: resourceType,
+    public_id: publicId,
+  }
+
+  // ✅ Optimize images only
+  if (mimetype?.startsWith("image/")) {
+    uploadOptions.transformation = [
+      { quality: "auto", fetch_format: "auto" },
+    ]
+  }
+
   return new Promise((resolve, reject) => {
-    try {
-      // ✅ auto detect resource type (BEST PRACTICE)
-      const resourceType = "auto"
-
-      // ✅ clean file name
-      const ext = path.extname(originalname)
-      const baseName = path.basename(originalname, ext)
-      const publicId = `${Date.now()}-${baseName}`
-
-      const uploadOptions = {
-        folder,
-        resource_type: resourceType,
-        public_id: publicId,
-      }
-
-      // ✅ optimize images only
-      if (mimetype.startsWith("image/")) {
-        uploadOptions.transformation = [
-          { quality: "auto", fetch_format: "auto" },
-        ]
-      }
-
-      const stream = cloudinary.uploader.upload_stream(
-        uploadOptions,
-        (error, result) => {
-          if (error) {
-            return reject({
-              message: "Cloudinary upload failed",
-              error,
-            })
-          }
-
-          resolve({
-            url: result.secure_url,
-            public_id: result.public_id,
-            resource_type: result.resource_type,
-            format: result.format,
-            bytes: result.bytes,
-          })
+    const stream = cloudinary.uploader.upload_stream(
+      uploadOptions,
+      (error, result) => {
+        if (error) {
+          console.error("Cloudinary Error:", error)
+          return reject(error)
         }
-      )
 
-      Readable.from(buffer).pipe(stream)
+        resolve({
+          url: result.secure_url,
+          public_id: result.public_id,
+          format: result.format,
+          bytes: result.bytes,
+        })
+      }
+    )
 
-    } catch (err) {
-      reject({
-        message: "Upload processing failed",
-        error: err,
-      })
-    }
+    // ✅ Handle stream errors (important)
+    stream.on("error", (err) => {
+      console.error("Stream Error:", err)
+      reject(err)
+    })
+
+    Readable.from(buffer).pipe(stream)
   })
 }
-
 // ── DELETE ───────────────────────────────────
 export const deleteFromCloudinary = async ({
   publicId,
