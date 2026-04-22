@@ -60,7 +60,8 @@
 
   --color-background-info: #dbeafe;
   --color-text-info: #2563eb;
-  
+  --color-text-tertiary: #64748b;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

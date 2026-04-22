@@ -1,19 +1,19 @@
 "use client"
 import { useState, useEffect } from "react"
-import { useAuth }             from "../../../../../context/AuthContext"
-import { PageHeader }          from "@/components/layout/PageHeader"
-import { StatCard }            from "@/components/dashboard/StatCard"
-import { RequestsTable }       from "@/components/dashboard/RequestsTable"
-import { Button }              from "@/components/ui/button"
-import api                     from "@/lib/axios"
-import Link                    from "next/link"
+import { useAuth } from "../../../../../context/AuthContext"
+import { PageHeader } from "@/components/layout/PageHeader"
+import { StatCard } from "@/components/dashboard/StatCard"
+import { RequestsTable } from "@/components/dashboard/RequestsTable"
+import { Button } from "@/components/ui/button"
+import api from "@/lib/axios"
+import Link from "next/link"
 
 
 export default function DashboardPage() {
-  const { user }                    = useAuth()
-  const [stats, setStats]           = useState(null)
-  const [requests, setRequests]     = useState([])
-  const [loading, setLoading]       = useState(true)
+  const { user } = useAuth()
+  const [stats, setStats] = useState(null)
+  const [requests, setRequests] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     Promise.all([
@@ -33,15 +33,37 @@ export default function DashboardPage() {
         title={`Welcome back, ${user?.name}`}
         subtitle="Here's your credentialing overview"
       />
+ 
+      <div className="grid grid-cols-1  md:grid-cols-2  lg:grid-cols-4 gap-3 mb-7">
+        <StatCard 
+        icon="./filebage.svg" 
+        label="Total submitted" 
+        value={stats?.total} 
+        subLabel={`${stats.weekly_change >= 0 ? "+" : ""}${stats.weekly_change}% from last week`} color={stats.weekly_change >= 0 ? "success" : "danger"}  />
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "28px" }}>
-        <StatCard icon="./filebage.svg" label="Total submitted" value={stats?.total}     color="default" />
-        <StatCard icon="./greentik.svg" label="Approved"        value={stats?.approved}  color="success" />
-        <StatCard icon="./pendingfile.svg" label="Pending"         value={stats?.pending}   color="warning" />
-        <StatCard icon="./rejectedFile.svg" label="Rejected"        value={stats?.rejected}  color="danger"  />
+        <StatCard 
+        icon="./greentik.svg" 
+        label="Approved" 
+        value={stats?.approved} 
+        subLabel={`${stats.approval_rate}% Approval Rate`} 
+        color="success" />
+
+        <StatCard 
+        icon="./pendingfile.svg" 
+        label="Pending" 
+        value={stats?.pending} 
+        subLabel="Avg 24 hour response" 
+        color="warning" />
+
+        <StatCard 
+        icon="./rejectedFile.svg" 
+        label="Rejected" 
+        value={stats?.rejected} 
+        subLabel={``} 
+        color="danger" />
       </div>
 
-      <div style={{
+      <div style={{ 
         background: "var(--color-background-primary)",
         borderRadius: "10px",
         border: "0.5px solid var(--color-border-tertiary)",

@@ -13,23 +13,82 @@ import { isValidTransition } from './requests.js'
 // Single aggregation — one DB round trip for all stat card numbers
 export const getStats = async (req, res) => {
   try {
-    const [requestStats, openTickets] = await Promise.all([
+    const now       = new Date()
+    const weekAgo   = new Date(now - 7 * 24 * 60 * 60 * 1000)
+    const twoWeeksAgo = new Date(now - 14 * 24 * 60 * 60 * 1000)
+
+    const [
+      statusGroups,
+      totalRequests,
+      thisWeekCount,
+      lastWeekCount,
+      openTickets,
+      criticalTickets,
+    ] = await Promise.all([
+
+      // 1. Group all requests by status
       CredentialingRequest.aggregate([
-        { $group: { _id: '$status', count: { $sum: 1 } } }
+        { $group: { _id: "$status", count: { $sum: 1 } } }
       ]),
+
+      // 2. Total request count
+      CredentialingRequest.countDocuments(),
+
+      // 3. Requests submitted THIS week (last 7 days)
+      CredentialingRequest.countDocuments({
+        submitted_at: { $gte: weekAgo }
+      }),
+
+      // 4. Requests submitted LAST week (7–14 days ago)
+      CredentialingRequest.countDocuments({
+        submitted_at: { $gte: twoWeeksAgo, $lt: weekAgo }
+      }),
+
+      // 5. Open support tickets
       SupportTicket.countDocuments({ is_resolved: false }),
+
+      // 6. Critical = pending for more than 72 hours
+      SupportTicket.countDocuments({
+        is_resolved: false,
+        createdAt: { $lt: new Date(now - 72 * 60 * 60 * 1000) }
+      }),
+
     ])
 
-    const result = { total: 0, pending: 0, in_review: 0, approved: 0, rejected: 0, open_tickets: openTickets }
-    requestStats.forEach(s => {
-      result[s._id] = s.count
-      result.total += s.count
+    // Build status map from aggregation
+    const statusMap = { pending: 0, in_review: 0, approved: 0, rejected: 0 }
+    statusGroups.forEach(s => { statusMap[s._id] = s.count })
+
+    // ── Calculate derived stats ──────────────────────────────
+
+    // +8% from last week
+    const weeklyChange = lastWeekCount === 0
+      ? 100                                           // avoid divide by zero
+      : Math.round(((thisWeekCount - lastWeekCount) / lastWeekCount) * 100)
+
+    // 75.0% approval rate = approved / (approved + rejected) * 100
+    const decided      = statusMap.approved + statusMap.rejected
+    const approvalRate = decided === 0
+      ? 0
+      : Math.round((statusMap.approved / decided) * 100 * 10) / 10  // 1 decimal
+
+    res.json({
+      total:          totalRequests,
+      approved:       statusMap.approved,
+      pending:        statusMap.pending,
+      in_review:      statusMap.in_review,
+      rejected:       statusMap.rejected,
+      open_tickets:   openTickets,
+
+      // ── Derived ─────────────────────────────────
+      weekly_change:  weeklyChange,      // e.g. +8 or -3
+      approval_rate:  approvalRate,      // e.g. 75.0
+      critical_count: criticalTickets,   // e.g. 2
     })
 
-    res.json(result)
   } catch (err) {
     console.error(err)
-    res.status(500).json({ message: 'Server error' })
+    res.status(500).json({ message: "Server error" })
   }
 }
 
@@ -39,26 +98,40 @@ export const getStats = async (req, res) => {
 export const getAllRequests = async (req, res) => {
   try {
     const { status, client_id, page = 1, limit = 20 } = req.query
-    const skip = (parseInt(page) - 1) * parseInt(limit)
+
+    const pageNum = parseInt(page)
+    const limitNum = parseInt(limit)
+    const skip = (pageNum - 1) * limitNum
 
     const filter = {}
-    if (status)    filter.status    = status
+    if (status) filter.status = status
     if (client_id) filter.client_id = new mongoose.Types.ObjectId(client_id)
 
     const [requests, total] = await Promise.all([
       CredentialingRequest.find(filter)
         .populate({
-          path:  'client_id',
+          path: 'client_id',
           model: 'Client',
-          populate: { path: 'user_id', model: 'User', select: 'name email' }
+          populate: {
+            path: 'user_id',
+            model: 'User',
+            select: 'name email'
+          }
         })
         .sort({ submitted_at: -1 })
         .skip(skip)
-        .limit(parseInt(limit)),
+        .limit(limitNum),
+
       CredentialingRequest.countDocuments(filter),
     ])
 
-    res.json({ requests, total, page: parseInt(page) })
+    res.json({
+      requests,
+      total,
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum), // ✅ ADD THIS
+    })
+
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: 'Server error' })

@@ -70,7 +70,12 @@ export const getMyRequests = async (req, res) => {
       CredentialingRequest.countDocuments(filter),
     ])
 
-    res.json({ requests, total, page: parseInt(page) })
+    res.json({ 
+      requests, 
+      total, 
+      page: parseInt(page),
+      totalPages: Math.ceil(total / parseInt(limit)),
+    })
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: 'Server error' })
@@ -80,24 +85,34 @@ export const getMyRequests = async (req, res) => {
 
 // ── GET /api/requests/my/stats ────────────────────────────────────
 // Counts for the client dashboard stat cards
+// controllers/requests.js — update getMyStats
 export const getMyStats = async (req, res) => {
-  try {
-    const stats = await CredentialingRequest.aggregate([
+  const now       = new Date()
+  const weekAgo   = new Date(now - 7 * 24 * 60 * 60 * 1000)
+  const twoWeeksAgo = new Date(now - 14 * 24 * 60 * 60 * 1000)
+
+  const [statusGroups, thisWeek, lastWeek] = await Promise.all([
+    CredentialingRequest.aggregate([
       { $match: { client_id: req.clientProfile._id } },
-      { $group: { _id: '$status', count: { $sum: 1 } } },
-    ])
+      { $group: { _id: "$status", count: { $sum: 1 } } }
+    ]),
+    CredentialingRequest.countDocuments({
+      client_id: req.clientProfile._id,
+      submitted_at: { $gte: weekAgo }
+    }),
+    CredentialingRequest.countDocuments({
+      client_id: req.clientProfile._id,
+      submitted_at: { $gte: twoWeeksAgo, $lt: weekAgo }
+    }),
+  ])
 
-    const result = { total: 0, pending: 0, in_review: 0, approved: 0, rejected: 0 }
-    stats.forEach(s => {
-      result[s._id] = s.count
-      result.total += s.count
-    })
+  const map = { pending: 0, in_review: 0, approved: 0, rejected: 0, total: 0 }
+  statusGroups.forEach(s => { map[s._id] = s.count; map.total += s.count })
 
-    res.json(result)
-  } catch (err) {
-    console.error(err)
-    res.status(500).json({ message: 'Server error' })
-  }
+  const weeklyChange = lastWeek === 0 ? 100
+    : Math.round(((thisWeek - lastWeek) / lastWeek) * 100)
+
+  res.json({ ...map, weekly_change: weeklyChange })
 }
 
 

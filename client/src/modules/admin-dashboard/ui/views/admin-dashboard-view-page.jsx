@@ -5,6 +5,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { RequestsTable } from "@/components/dashboard/RequestsTable";
 import { Card, CardContent } from "@/components/ui/card";
 import api from "@/lib/axios";
+import { MessageSquareOff } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState(null);
@@ -42,11 +43,40 @@ export default function AdminDashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <StatCard icon="/filebage.svg" label="Total requests" value={stats?.total} color="default" />
-        <StatCard icon="/pendingfile.svg" label="Pending" value={stats?.pending} color="warning" />
-        <StatCard icon="/greentik.svg" label="Approved" value={stats?.approved} color="success" />
-        <StatCard icon="/rejectedFile.svg" label="Rejected" value={stats?.rejected} color="danger" />
-        <StatCard icon="/openticketsfile.svg" label="Open tickets" value={stats?.open_tickets} color="danger" />
+        <StatCard
+          icon="/filebage.svg"
+          label="Total submitted"
+          value={stats?.total}
+          subLabel={`${stats.weekly_change >= 0 ? "+" : ""}${stats.weekly_change}% from last week`} color={stats.weekly_change >= 0 ? "success" : "danger"} 
+          />
+
+        <StatCard
+          icon="/greentik.svg"
+          label="Approved"
+          value={stats?.approved}
+          subLabel={`${stats.approval_rate}% Approval Rate`}
+          color="success" 
+          />
+
+        <StatCard
+          icon="/pendingfile.svg"
+          label="Pending"
+          value={stats?.pending}
+          subLabel="Avg 24 hour response"
+          color="warning" 
+          />
+        <StatCard
+          icon="/rejectedFile.svg"
+          label="Rejected" value={stats?.rejected}
+          color="danger" 
+          />
+        <StatCard
+          icon="/openticketsfile.svg"
+          label="Open tickets"
+          value={stats?.open_tickets}
+          subLabel={stats.critical_count > 0 ? `${stats.critical_count} Critical status` : "All clear"}
+          color={stats.critical_count > 0 ? "danger" : "success"} 
+          />
       </div>
 
       {/* Recent Requests */}

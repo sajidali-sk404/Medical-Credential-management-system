@@ -10,14 +10,25 @@ export default function AdminClientsPage() {
   const [clients, setClients] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const LIMIT = 20;
   useEffect(() => {
-    const q = search ? `?search=${search}` : "";
     setLoading(true);
-    api.get(`/api/admin/clients${q}`)
-      .then(r => setClients(r.data.clients))
+
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+    params.append("page", page);
+    params.append("limit", LIMIT);
+
+    api.get(`/api/admin/clients?${params.toString()}`)
+      .then((r) => {
+        setClients(r.data.clients);
+        setTotalPages(r.data.totalPages);
+      })
       .finally(() => setLoading(false));
-  }, [search]);
+
+  }, [search, page]); // 👈 include page
 
   return (
     <div className="space-y-6">
@@ -111,6 +122,27 @@ export default function AdminClientsPage() {
 
         </CardContent>
       </Card>
+      <div className="flex justify-between items-center mt-4">
+        <button
+          onClick={() => setPage((p) => Math.max(p - 1, 1))}
+          disabled={page === 1}
+          className="px-3 py-1 border rounded-md disabled:opacity-40"
+        >
+          ← Prev
+        </button>
+
+        <span className="text-sm text-gray-500">
+          Page {page} of {totalPages}
+        </span>
+
+        <button
+          onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+          disabled={page === totalPages}
+          className="px-3 py-1 border rounded-md disabled:opacity-40"
+        >
+          Next →
+        </button>
+      </div>
     </div>
   );
 }

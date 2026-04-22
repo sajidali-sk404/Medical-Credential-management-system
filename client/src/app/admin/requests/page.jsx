@@ -7,21 +7,26 @@ import { Card, CardContent } from "@/components/ui/card";
 import api from "@/lib/axios";
 
 export default function AdminDashboardPage() {
-  const [stats, setStats] = useState(null);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const LIMIT = 5;
 
   useEffect(() => {
-    Promise.all([
-      api.get("/api/admin/dashboard/stats"),
-      api.get("/api/admin/requests?limit=8"),
-    ])
-      .then(([s, r]) => {
-        setStats(s.data);
+    setLoading(true);
+    const params = new URLSearchParams();
+    params.append("page", page);
+    params.append("limit", LIMIT);
+
+    api.get(`/api/admin/requests?${params.toString()}`)
+      .then((r) => {
         setRequests(r.data.requests);
+        setTotalPages(r.data.totalPages || 1)
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [page]);
+     
 
   if (loading) {
     return (
@@ -39,14 +44,6 @@ export default function AdminDashboardPage() {
         title="Admin Dashboard"
         subtitle="Platform-wide overview"
       />
-
-      {/* Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon="/filebage.svg" label="Total requests" value={stats?.total} color="default" />
-        <StatCard icon="/pendingfile.svg" label="Pending" value={stats?.pending} color="warning" />
-        <StatCard icon="/greentik.svg" label="Approved" value={stats?.approved} color="success" />
-        <StatCard icon="/openticketsfile.svg" label="Open tickets" value={stats?.open_tickets} color="danger" />
-      </div>
 
       {/* Recent Requests */}
       <Card>
@@ -68,7 +65,27 @@ export default function AdminDashboardPage() {
 
         </CardContent>
       </Card>
+                <div className="flex justify-between items-center mt-4">
+        <button
+          onClick={() => setPage((p) => Math.max(p - 1, 1))}
+          disabled={page === 1}
+          className="px-3 py-1 border rounded-md disabled:opacity-40"
+        >
+          ← Prev
+        </button>
 
+        <span className="text-sm text-gray-500">
+          Page {page} of {totalPages}
+        </span>
+
+        <button
+          onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+          disabled={page === totalPages}
+          className="px-3 py-1 border rounded-md disabled:opacity-40"
+        >
+          Next →
+        </button>
+      </div>
     </div>
   );
 }
