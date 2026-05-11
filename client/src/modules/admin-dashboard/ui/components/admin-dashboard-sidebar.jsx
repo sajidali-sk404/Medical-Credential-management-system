@@ -3,10 +3,10 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupConte
 import { LayoutDashboard, FileText, ShieldQuestionMark, Users } from 'lucide-react';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { cn } from "../../../../lib/utils";
 import { DashboardUserButton } from "../../../dashboard/ui/components/dashboard-user-button";
-import { Separator } from "@/components/ui/separator";
-import { Children } from "react";
+import { Separator } from "../../../../components/ui/separator";
+
 
 const adminRoutes = [
     {
@@ -36,7 +36,14 @@ export const AdminDashboardSidebar = ({ children }) => {
         <div className="flex h-screen w-full">
             <Sidebar>
                 <SidebarHeader>
-                    <h2>Admin Portal</h2>
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-md bg-[#1D9E75] flex items-center justify-center">
+                            <span className="text-[13px] font-bold">C</span>
+                        </div>
+                        <span className="font-semibold text-[15px] tracking-[-0.01em]">
+                            CredFlow
+                        </span>
+                    </div>
                 </SidebarHeader>
                 <div className="px-4 py-2">
                     <Separator className="opacity-50 text-[#5D6B68]" />

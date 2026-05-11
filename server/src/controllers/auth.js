@@ -1,7 +1,7 @@
 // controllers/auth.js
 import bcrypt from 'bcryptjs'
-import jwt    from 'jsonwebtoken'
-import User   from '../models/User.js'
+import jwt from 'jsonwebtoken'
+import User from '../models/User.js'
 import Client from '../models/Client.js'
 import { uploadToCloudinary } from '../lib/cloudinary.js'
 
@@ -32,21 +32,24 @@ export const login = async (req, res) => {
     // httpOnly cookie — JS on the browser cannot read this
     res.cookie('token', token, {
       httpOnly: true,
-      sameSite: 'strict',
-      secure:   process.env.NODE_ENV === 'production',  // HTTPS only in prod
-      maxAge:   7 * 24 * 60 * 60 * 1000               // 7 days in ms
-    })
+      secure: true,
+      sameSite: 'none',
+      domain: '.onrender.com',   // 🔥 ADD THIS
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
 
     res.json({
       message: 'Login successful',
+      token,
       user: {
         image: user.image,
-        id:    user._id,
-        name:  user.name,
+        id: user._id,
+        name: user.name,
         email: user.email,
-        role:  user.role,
+        role: user.role,
       }
     })
+    console.log("Cookies:", req.cookies);
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: 'Server error' })
@@ -56,7 +59,7 @@ export const login = async (req, res) => {
 export const register = async (req, res) => {
   try {
     const { name, email, password, company_name, phone } = req.body;
-
+       const errors = []
     // ✅ validation
     if (!name || !email || !password || !company_name) {
       return res.status(400).json({
@@ -120,16 +123,22 @@ export const register = async (req, res) => {
 };
 
 export const logout = (req, res) => {
-  res.clearCookie('token')
+  res.clearCookie('token', {
+    httpOnly: true,
+    sameSite: 'none',
+    secure: true,
+    domain: '.onrender.com'   // 🔥 ADD THIS
+  })
   res.json({ message: 'Logged out' })
 }
 
 export const getMe = async (req, res) => {
+  res.set("Cache-Control", "no-store")
   res.json({
-    id:    req.user._id,
-    name:  req.user.name,
+    id: req.user._id,
+    name: req.user.name,
     email: req.user.email,
-    role:  req.user.role,
+    role: req.user.role,
     image: req.user.image,
   })
 }

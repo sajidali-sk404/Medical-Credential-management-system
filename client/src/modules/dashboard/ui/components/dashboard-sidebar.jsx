@@ -1,12 +1,12 @@
 "use client";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { LayoutDashboard, FileText, ShieldQuestionMark } from 'lucide-react';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "../../../../components/ui/sidebar";
+import { LayoutDashboard, FileText, HelpCircle } from 'lucide-react'
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { cn } from "../../../../lib/utils";
 import { DashboardUserButton } from "./dashboard-user-button";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "../../../../components/ui/button";
+import { Separator } from "../../../../components/ui/separator";
 
 const clientRoutes = [
     {
@@ -20,7 +20,7 @@ const clientRoutes = [
         href: "/dashboard/requests",
     },
     {
-        icon: ShieldQuestionMark,
+        icon: HelpCircle,
         label: "Contact Support",
         href: "/dashboard/support",
     }
@@ -32,7 +32,14 @@ export const DashboardSidebar = ({ children }) => {
         <div className="flex h-screen w-full">
             <Sidebar>
                 <SidebarHeader>
-                    <h2>Dashboard</h2>
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-md bg-[#1D9E75] flex items-center justify-center">
+                            <span className="text-[13px] font-bold">C</span>
+                        </div>
+                        <span className="font-semibold text-[15px] tracking-[-0.01em]">
+                            CredFlow
+                        </span>
+                    </div>
                 </SidebarHeader>
                 <div className="px-4 py-2">
                     <Separator className="opacity-50 text-[#5D6B68]" />

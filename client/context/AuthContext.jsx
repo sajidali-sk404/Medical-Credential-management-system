@@ -1,22 +1,30 @@
 // context/AuthContext.jsx
 "use client"
 import { createContext, useContext, useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import Cookies from "js-cookie"
 import api from "@/lib/axios"
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser]       = useState(null)
+
+  const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // ── On every page load — check if session cookie is still valid ──
-  // If the cookie exists and is valid, /api/auth/me returns the user.
-  // If expired or missing, it returns 401 and we set user to null.
+  const router = useRouter()
+
   useEffect(() => {
-    api.get("/api/auth/me")
-      .then(({ data }) => setUser(data))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false))
+    api.get("/api/auth/me", { withCredentials: true })
+      .then(({ data }) => {
+        setUser(data)  // user object or null
+      })
+      .catch((err) => {
+        setUser((prev) => prev ?? null);
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }, [])
 
   // ── Called immediately after a successful login ───────────────────
@@ -28,13 +36,11 @@ export function AuthProvider({ children }) {
   // ── Clears session on both server and client ──────────────────────
   const logout = async () => {
     try {
-      await api.post("/api/auth/logout")   // clears httpOnly cookie on server
-    } catch {
-      // continue even if request fails
-    } finally {
-      setUser(null)
-      window.location.href = "/sign-in"
-    }
+      await api.post("/api/auth/logout")   // clears httpOnly backend cookie
+    } catch { }
+    Cookies.remove("token")               // clears frontend cookie
+    setUser(null)
+    router.push("/sign-in")
   }
 
   const value = {
@@ -42,9 +48,9 @@ export function AuthProvider({ children }) {
     loading,                                 // true during initial session check
     login,                                   // call after successful sign-in
     logout,                                  // call from navbar or any button
-    isAdmin:  user?.role === "admin",        // quick boolean for conditionals
+    isAdmin: user?.role === "admin",        // quick boolean for conditionals
     isClient: user?.role === "client",       // quick boolean for conditionals
-    isLoggedIn: !!user,                      // simple truthy check
+    isLoggedIn: !user,                      // simple truthy check
   }
 
   return (
